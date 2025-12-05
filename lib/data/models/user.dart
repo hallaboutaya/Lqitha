@@ -8,7 +8,7 @@ class User {
   final String role;
   final int points;
   final String? createdAt;
-  final String? updatedAt;
+  String? updatedAt;
 
   User({
     required this.id,

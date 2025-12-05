@@ -25,7 +25,6 @@ class RecentActivity extends StatelessWidget {
   }
 
   Widget _activityTile(Map<String, String> a) {
-    final points = int.tryParse(a['points']!.replaceAll('+', '').replaceAll('-', '')) ?? 0;
     final isPositive = a['points']!.contains('+');
 
     return Container(
@@ -39,17 +38,23 @@ class RecentActivity extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(a['title']!, style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text(a['time']!, style: const TextStyle(color: Colors.grey)),
-          ]),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                a['title']!,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Text(a['time']!, style: const TextStyle(color: Colors.grey)),
+            ],
+          ),
           Text(
             a['points']!,
             style: TextStyle(
               color: isPositive ? Colors.green : Colors.red,
               fontWeight: FontWeight.bold,
             ),
-          )
+          ),
         ],
       ),
     );

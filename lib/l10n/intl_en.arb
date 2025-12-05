@@ -1,0 +1,6 @@
+{
+  "profileUpdated": "Profile updated successfully",
+  "profileUpdateFailed": "Failed to update profile",
+  "avatarUploadFailed": "Failed to upload avatar",
+  "userNotFound": "User not found"
+}

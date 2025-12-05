@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../screens/profile/edit_profile_screen.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
@@ -10,7 +11,17 @@ class ProfileHeader extends StatelessWidget {
         const SizedBox(height: 10),
         Align(
           alignment: Alignment.topRight,
-          child: Icon(Icons.settings_outlined, color: Colors.grey[700]),
+          child: IconButton(
+            icon: Icon(Icons.edit_outlined, color: Colors.grey[700]),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
+              );
+            },
+          ),
         ),
         Container(
           width: 80,
@@ -23,11 +34,8 @@ class ProfileHeader extends StatelessWidget {
             child: Image.network(
               'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=400',
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Icon(
-                Icons.person,
-                color: Colors.deepPurple,
-                size: 36,
-              ),
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.person, color: Colors.deepPurple, size: 36),
             ),
           ),
         ),
