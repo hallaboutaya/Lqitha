@@ -11,6 +11,7 @@
 /// Styled with purple theme to match found items.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 
 class FoundItemPopup extends StatefulWidget {
@@ -103,10 +104,10 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Text(
-                                'Report Found Item',
+                              Text(
+                                AppLocalizations.of(context)!.reportFoundItem,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.primaryPurple,
                                   fontSize: 18,
                                   fontFamily: 'Arimo',
@@ -130,10 +131,10 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Fill in the details about the found item',
+                      Text(
+                        AppLocalizations.of(context)!.fillDetailsFoundItem,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -143,9 +144,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                       ),
                       const SizedBox(height: 40),
                       // Upload Photos Section
-                      const Text(
-                        'Upload Photos',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.uploadPhotos,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -180,10 +181,10 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                                 color: AppColors.textTertiary,
                               ),
                               const SizedBox(height: 8),
-                              const Text(
-                                'Click to upload images',
+                              Text(
+                                AppLocalizations.of(context)!.clickToUploadImages,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.textTertiary,
                                   fontSize: 12,
                                   fontFamily: 'Arimo',
@@ -193,9 +194,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'PNG, JPG up to 10MB',
+                                AppLocalizations.of(context)!.pngJpgUpTo10MB,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.textLight,
                                   fontSize: 12,
                                   fontFamily: 'Arimo',
@@ -209,9 +210,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                       ),
                       const SizedBox(height: 16),
                       // Description Section
-                      const Text(
-                        'Description',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.description,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -237,9 +238,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                         child: TextField(
                           controller: _descriptionController,
                           maxLines: 3,
-                          decoration: const InputDecoration(
-                            hintText: 'Describe the found item in detail...',
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)!.describeFoundItemDetail,
+                            hintStyle: const TextStyle(
                               color: AppColors.textLight,
                               fontSize: 14,
                               fontFamily: 'Arimo',
@@ -259,9 +260,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                       ),
                       const SizedBox(height: 16),
                       // Location Section
-                      const Text(
-                        'Location',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.location,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -285,9 +286,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                         ),
                         child: TextField(
                           controller: _locationController,
-                          decoration: const InputDecoration(
-                            hintText: 'Where did you find it?',
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)!.whereDidYouFindIt,
+                            hintStyle: const TextStyle(
                               color: AppColors.textLight,
                               fontSize: 14,
                               fontFamily: 'Arimo',
@@ -295,8 +296,8 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                             ),
                             border: InputBorder.none,
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                            prefixIcon: Icon(
+                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            prefixIcon: const Icon(
                               Icons.location_on_outlined,
                               size: 16,
                               color: AppColors.textLight,
@@ -312,9 +313,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                       ),
                       const SizedBox(height: 16),
                       // Tags Section
-                      const Text(
-                        'Tags (comma separated)',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.tagsCommaSeparated,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -338,9 +339,9 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                         ),
                         child: TextField(
                           controller: _tagsController,
-                          decoration: const InputDecoration(
-                            hintText: 'wallet, keys, phone...',
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)!.walletKeysPhone,
+                            hintStyle: const TextStyle(
                               color: AppColors.textLight,
                               fontSize: 14,
                               fontFamily: 'Arimo',
@@ -348,8 +349,8 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                             ),
                             border: InputBorder.none,
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                            prefixIcon: Icon(
+                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            prefixIcon: const Icon(
                               Icons.tag_outlined,
                               size: 16,
                               color: AppColors.textLight,
@@ -382,10 +383,10 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: const Center(
+                                child: Center(
                                   child: Text(
-                                    'Cancel',
-                                    style: TextStyle(
+                                    AppLocalizations.of(context)!.cancel,
+                                    style: const TextStyle(
                                       color: AppColors.textTertiary,
                                       fontSize: 14,
                                       fontFamily: 'Arimo',
@@ -405,8 +406,8 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                                   // TODO: Handle submission with backend
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Found item posted successfully!'),
+                                    SnackBar(
+                                      content: Text(AppLocalizations.of(context)!.foundItemPostedSuccessfully),
                                     ),
                                   );
                                 }
@@ -433,10 +434,10 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                                     ),
                                   ],
                                 ),
-                                child: const Center(
+                                child: Center(
                                   child: Text(
-                                    'Submit Post',
-                                    style: TextStyle(
+                                    AppLocalizations.of(context)!.submitPost,
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 14,
                                       fontFamily: 'Arimo',

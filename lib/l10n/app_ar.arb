@@ -1,0 +1,48 @@
+{
+  "@@locale": "ar",
+  "foundItems": "الأشياء الموجودة",
+  "helpReuniteItems": "ساعد في لم شمل الأشياء مع أصحابها",
+  "searchItemsTagsLocations": "ابحث عن الأشياء، العلامات، المواقع...",
+  "lostItems": "الأشياء المفقودة",
+  "helpFindLostBelongings": "ساعد الناس في العثور على ممتلكاتهم المفقودة",
+  "searchLostItems": "ابحث عن الأشياء المفقودة...",
+  "notifications": "الإشعارات",
+  "stayUpdatedOnItems": "ابق على اطلاع على أشيائك",
+  "saysTheyFoundYourLostWallet": "يقول أنه وجد محفظتك المفقودة!",
+  "unlockedYourContactInformation": "فتح معلومات الاتصال الخاصة بك",
+  "saysTheyFoundYourPhone": "يقول أنه وجد هاتفك!",
+  "getContact": "الحصول على جهة الاتصال",
+  "yesIGotMyItemBack": "نعم، استعدت الشيء الخاص بي",
+  "thanksMarkedAsReunited": "شكراً! لقد وضعنا علامة على {userName} كأنه تم لم شمله.",
+  "@thanksMarkedAsReunited": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "yourItem": "الشيء الخاص بك",
+  "reportFoundItem": "الإبلاغ عن شيء موجود",
+  "fillDetailsFoundItem": "املأ التفاصيل حول الشيء الموجود",
+  "uploadPhotos": "رفع الصور",
+  "clickToUploadImages": "انقر لرفع الصور",
+  "pngJpgUpTo10MB": "PNG، JPG حتى 10 ميجابايت",
+  "description": "الوصف",
+  "describeFoundItemDetail": "اوصف الشيء الموجود بالتفصيل...",
+  "location": "الموقع",
+  "whereDidYouFindIt": "أين وجدته؟",
+  "tagsCommaSeparated": "العلامات (مفصولة بفواصل)",
+  "walletKeysPhone": "محفظة، مفاتيح، هاتف...",
+  "cancel": "إلغاء",
+  "submitPost": "نشر",
+  "foundItemPostedSuccessfully": "تم نشر الشيء الموجود بنجاح!",
+  "reportLostItem": "الإبلاغ عن شيء مفقود",
+  "fillDetailsLostItem": "املأ التفاصيل حول الشيء المفقود",
+  "describeLostItemDetail": "اوصف الشيء المفقود بالتفصيل...",
+  "whereDidYouLoseIt": "أين فقدته؟",
+  "lostItemPostedSuccessfully": "تم نشر الشيء المفقود بنجاح!",
+  "lqitha": "لقيثة",
+  "lqitou": "لقيتو",
+  "rewardOffered": "مكافأة مقدمة"
+}
+

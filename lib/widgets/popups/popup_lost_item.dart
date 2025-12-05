@@ -11,6 +11,7 @@
 /// Styled with orange theme to match lost items.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 
 class LostItemPopup extends StatefulWidget {
@@ -103,10 +104,10 @@ class _LostItemPopupState extends State<LostItemPopup> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              const Text(
-                                'Report Lost Item',
+                              Text(
+                                AppLocalizations.of(context)!.reportLostItem,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.primaryOrange,
                                   fontSize: 18,
                                   fontFamily: 'Arimo',
@@ -130,10 +131,10 @@ class _LostItemPopupState extends State<LostItemPopup> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Fill in the details about the lost item',
+                      Text(
+                        AppLocalizations.of(context)!.fillDetailsLostItem,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -143,9 +144,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                       ),
                       const SizedBox(height: 40),
                       // Upload Photos Section
-                      const Text(
-                        'Upload Photos',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.uploadPhotos,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -180,10 +181,10 @@ class _LostItemPopupState extends State<LostItemPopup> {
                                 color: AppColors.textTertiary,
                               ),
                               const SizedBox(height: 8),
-                              const Text(
-                                'Click to upload images',
+                              Text(
+                                AppLocalizations.of(context)!.clickToUploadImages,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.textTertiary,
                                   fontSize: 12,
                                   fontFamily: 'Arimo',
@@ -193,9 +194,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'PNG, JPG up to 10MB',
+                                AppLocalizations.of(context)!.pngJpgUpTo10MB,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: AppColors.textLight,
                                   fontSize: 12,
                                   fontFamily: 'Arimo',
@@ -209,9 +210,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                       ),
                       const SizedBox(height: 16),
                       // Description Section
-                      const Text(
-                        'Description',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.description,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -237,17 +238,17 @@ class _LostItemPopupState extends State<LostItemPopup> {
                         child: TextField(
                           controller: _descriptionController,
                           maxLines: 3,
-                          decoration: const InputDecoration(
-                            hintText: 'Describe the lost item in detail...',
-                            hintStyle: TextStyle(
-                              color: AppColors.textLight,
-                              fontSize: 14,
-                              fontFamily: 'Arimo',
-                              fontWeight: FontWeight.w400,
-                              height: 1.43,
-                            ),
-                            border: InputBorder.none,
-                          ),
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(context)!.describeLostItemDetail,
+                                hintStyle: const TextStyle(
+                                  color: AppColors.textLight,
+                                  fontSize: 14,
+                                  fontFamily: 'Arimo',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.43,
+                                ),
+                                border: InputBorder.none,
+                              ),
                           style: const TextStyle(
                             color: AppColors.textTertiary,
                             fontSize: 14,
@@ -259,9 +260,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                       ),
                       const SizedBox(height: 16),
                       // Location Section
-                      const Text(
-                        'Location',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.location,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -287,9 +288,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                           children: [
                             TextField(
                               controller: _locationController,
-                              decoration: const InputDecoration(
-                                hintText: 'Where did you lose it?',
-                                hintStyle: TextStyle(
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(context)!.whereDidYouLoseIt,
+                                hintStyle: const TextStyle(
                                   color: AppColors.textLight,
                                   fontSize: 14,
                                   fontFamily: 'Arimo',
@@ -318,9 +319,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                       ),
                       const SizedBox(height: 16),
                       // Tags Section
-                      const Text(
-                        'Tags (comma separated)',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.tagsCommaSeparated,
+                        style: const TextStyle(
                           color: AppColors.textTertiary,
                           fontSize: 14,
                           fontFamily: 'Arimo',
@@ -346,9 +347,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
                           children: [
                             TextField(
                               controller: _tagsController,
-                              decoration: const InputDecoration(
-                                hintText: 'wallet, keys, phone...',
-                                hintStyle: TextStyle(
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(context)!.walletKeysPhone,
+                                hintStyle: const TextStyle(
                                   color: AppColors.textLight,
                                   fontSize: 14,
                                   fontFamily: 'Arimo',
@@ -394,10 +395,10 @@ class _LostItemPopupState extends State<LostItemPopup> {
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: const Center(
+                                child: Center(
                                   child: Text(
-                                    'Cancel',
-                                    style: TextStyle(
+                                    AppLocalizations.of(context)!.cancel,
+                                    style: const TextStyle(
                                       color: AppColors.textTertiary,
                                       fontSize: 14,
                                       fontFamily: 'Arimo',
@@ -417,8 +418,8 @@ class _LostItemPopupState extends State<LostItemPopup> {
                                   // TODO: Handle submission with backend
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Lost item posted successfully!'),
+                                    SnackBar(
+                                      content: Text(AppLocalizations.of(context)!.lostItemPostedSuccessfully),
                                     ),
                                   );
                                 }
@@ -445,10 +446,10 @@ class _LostItemPopupState extends State<LostItemPopup> {
                                     ),
                                   ],
                                 ),
-                                child: const Center(
+                                child: Center(
                                   child: Text(
-                                    'Submit Post',
-                                    style: TextStyle(
+                                    AppLocalizations.of(context)!.submitPost,
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 14,
                                       fontFamily: 'Arimo',

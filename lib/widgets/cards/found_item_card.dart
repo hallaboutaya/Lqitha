@@ -13,6 +13,7 @@
 /// Styled with purple theme to match Figma design.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../popups/popup_payment.dart';
@@ -308,9 +309,9 @@ class FoundItemCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'LQitha',
+                        AppLocalizations.of(context)!.lqitha,
                         style: AppTextStyles.buttonText,
                       ),
                     ),

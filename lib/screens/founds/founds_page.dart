@@ -10,6 +10,7 @@
 /// Items are filtered in real-time as the user types in the search bar.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../widgets/inputs/search_bar.dart';
 import '../../widgets/cards/found_item_card.dart';
 import '../../widgets/common/page_header.dart';
@@ -91,15 +92,15 @@ class _FoundsPageState extends State<FoundsPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
                 child: PageHeader(
-                  title: 'Found Items',
-                  subtitle: 'Help reunite items with their owners',
+                  title: AppLocalizations.of(context)!.foundItems,
+                  subtitle: AppLocalizations.of(context)!.helpReuniteItems,
                 ),
               ),
               // Search Bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: CustomSearchBar(
-                  hintText: 'Search items, tags, locations...',
+                  hintText: AppLocalizations.of(context)!.searchItemsTagsLocations,
                   onChanged: (value) {
                     setState(() => _searchQuery = value);
                   },

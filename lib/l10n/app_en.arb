@@ -1,0 +1,157 @@
+{
+  "@@locale": "en",
+  "foundItems": "Found Items",
+  "@foundItems": {
+    "description": "Title for the Found Items page"
+  },
+  "helpReuniteItems": "Help reunite items with their owners",
+  "@helpReuniteItems": {
+    "description": "Subtitle for Found Items page"
+  },
+  "searchItemsTagsLocations": "Search items, tags, locations...",
+  "@searchItemsTagsLocations": {
+    "description": "Search placeholder for Found Items page"
+  },
+  "lostItems": "Lost Items",
+  "@lostItems": {
+    "description": "Title for the Lost Items page"
+  },
+  "helpFindLostBelongings": "Help people find their lost belongings",
+  "@helpFindLostBelongings": {
+    "description": "Subtitle for Lost Items page"
+  },
+  "searchLostItems": "Search lost items...",
+  "@searchLostItems": {
+    "description": "Search placeholder for Lost Items page"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Title for the Notifications page"
+  },
+  "stayUpdatedOnItems": "Stay updated on your items",
+  "@stayUpdatedOnItems": {
+    "description": "Subtitle for Notifications page"
+  },
+  "saysTheyFoundYourLostWallet": "says they found your lost wallet!",
+  "@saysTheyFoundYourLostWallet": {
+    "description": "Notification message when someone found a wallet"
+  },
+  "unlockedYourContactInformation": "unlocked your contact information",
+  "@unlockedYourContactInformation": {
+    "description": "Notification message when contact is unlocked"
+  },
+  "saysTheyFoundYourPhone": "says they found your phone!",
+  "@saysTheyFoundYourPhone": {
+    "description": "Notification message when someone found a phone"
+  },
+  "getContact": "Get Contact",
+  "@getContact": {
+    "description": "Button label to get contact information"
+  },
+  "yesIGotMyItemBack": "Yes, I got my item back",
+  "@yesIGotMyItemBack": {
+    "description": "Button label to confirm item return"
+  },
+  "thanksMarkedAsReunited": "Thanks! We marked {userName} as reunited.",
+  "@thanksMarkedAsReunited": {
+    "description": "Success message when item is marked as reunited",
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "yourItem": "your item",
+  "@yourItem": {
+    "description": "Generic reference to user's item"
+  },
+  "reportFoundItem": "Report Found Item",
+  "@reportFoundItem": {
+    "description": "Title for the found item popup dialog"
+  },
+  "fillDetailsFoundItem": "Fill in the details about the found item",
+  "@fillDetailsFoundItem": {
+    "description": "Instructions text in found item popup"
+  },
+  "uploadPhotos": "Upload Photos",
+  "@uploadPhotos": {
+    "description": "Label for photo upload section"
+  },
+  "clickToUploadImages": "Click to upload images",
+  "@clickToUploadImages": {
+    "description": "Instruction text for image upload"
+  },
+  "pngJpgUpTo10MB": "PNG, JPG up to 10MB",
+  "@pngJpgUpTo10MB": {
+    "description": "File format and size limit text"
+  },
+  "description": "Description",
+  "@description": {
+    "description": "Label for description field"
+  },
+  "describeFoundItemDetail": "Describe the found item in detail...",
+  "@describeFoundItemDetail": {
+    "description": "Placeholder for found item description field"
+  },
+  "location": "Location",
+  "@location": {
+    "description": "Label for location field"
+  },
+  "whereDidYouFindIt": "Where did you find it?",
+  "@whereDidYouFindIt": {
+    "description": "Placeholder for found item location field"
+  },
+  "tagsCommaSeparated": "Tags (comma separated)",
+  "@tagsCommaSeparated": {
+    "description": "Label for tags field"
+  },
+  "walletKeysPhone": "wallet, keys, phone...",
+  "@walletKeysPhone": {
+    "description": "Placeholder for tags field"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button label"
+  },
+  "submitPost": "Submit Post",
+  "@submitPost": {
+    "description": "Submit button label"
+  },
+  "foundItemPostedSuccessfully": "Found item posted successfully!",
+  "@foundItemPostedSuccessfully": {
+    "description": "Success message after posting found item"
+  },
+  "reportLostItem": "Report Lost Item",
+  "@reportLostItem": {
+    "description": "Title for the lost item popup dialog"
+  },
+  "fillDetailsLostItem": "Fill in the details about the lost item",
+  "@fillDetailsLostItem": {
+    "description": "Instructions text in lost item popup"
+  },
+  "describeLostItemDetail": "Describe the lost item in detail...",
+  "@describeLostItemDetail": {
+    "description": "Placeholder for lost item description field"
+  },
+  "whereDidYouLoseIt": "Where did you lose it?",
+  "@whereDidYouLoseIt": {
+    "description": "Placeholder for lost item location field"
+  },
+  "lostItemPostedSuccessfully": "Lost item posted successfully!",
+  "@lostItemPostedSuccessfully": {
+    "description": "Success message after posting lost item"
+  },
+  "lqitha": "LQitha",
+  "@lqitha": {
+    "description": "Button label on found item card"
+  },
+  "lqitou": "LQitou",
+  "@lqitou": {
+    "description": "Button label on lost item card"
+  },
+  "rewardOffered": "Reward offered",
+  "@rewardOffered": {
+    "description": "Badge text for items with reward"
+  }
+}
+

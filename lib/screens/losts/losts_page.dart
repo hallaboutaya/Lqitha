@@ -10,6 +10,7 @@
 /// Items are filtered in real-time as the user types in the search bar.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../widgets/inputs/search_bar.dart';
 import '../../widgets/cards/lost_item_card.dart';
 import '../../widgets/common/background_gradient.dart';
@@ -111,13 +112,13 @@ class _LostsPageState extends State<LostsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Lost Items',
+                            AppLocalizations.of(context)!.lostItems,
                             style: AppTextStyles.pageTitle.copyWith(
                               color: AppColors.primaryOrange,
                             ),
                           ),
                           Text(
-                            'Help people find their lost belongings',
+                            AppLocalizations.of(context)!.helpFindLostBelongings,
                             style: AppTextStyles.subtitle,
                           ),
                         ],
@@ -130,7 +131,7 @@ class _LostsPageState extends State<LostsPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: CustomSearchBar(
-                  hintText: 'Search lost items...',
+                  hintText: AppLocalizations.of(context)!.searchLostItems,
                   onChanged: (value) {
                     setState(() => _searchQuery = value);
                   },

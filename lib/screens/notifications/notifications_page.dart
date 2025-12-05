@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -9,34 +10,37 @@ import '../../widgets/popups/popup_payment.dart';
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
 
-  static final List<_NotificationItem> _notifications = [
-    _NotificationItem(
-      userName: 'Ahmed Benali',
-      message: 'says they found your lost wallet!',
-      timeAgo: '5 min ago',
-      avatarUrl: 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=200',
-      action: NotificationAction.getContact,
-      actionLabel: 'Get Contact',
-      itemTitle: 'Black leather wallet',
-    ),
-    _NotificationItem(
-      userName: 'Sarah Johnson',
-      message: 'unlocked your contact information',
-      timeAgo: '1 hour ago',
-      avatarUrl: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200',
-      action: NotificationAction.confirmReturn,
-      actionLabel: 'Yes, I got my item back',
-    ),
-    _NotificationItem(
-      userName: 'Karim Meziane',
-      message: 'says they found your phone!',
-      timeAgo: '3 hours ago',
-      avatarUrl: 'https://images.unsplash.com/photo-1544723795-432537bda887?w=200',
-      action: NotificationAction.getContact,
-      actionLabel: 'Get Contact',
-      itemTitle: 'Silver iPhone 13',
-    ),
-  ];
+  List<_NotificationItem> _getNotifications(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _NotificationItem(
+        userName: 'Ahmed Benali',
+        message: l10n.saysTheyFoundYourLostWallet,
+        timeAgo: '5 min ago',
+        avatarUrl: 'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=200',
+        action: NotificationAction.getContact,
+        actionLabel: l10n.getContact,
+        itemTitle: 'Black leather wallet',
+      ),
+      _NotificationItem(
+        userName: 'Sarah Johnson',
+        message: l10n.unlockedYourContactInformation,
+        timeAgo: '1 hour ago',
+        avatarUrl: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200',
+        action: NotificationAction.confirmReturn,
+        actionLabel: l10n.yesIGotMyItemBack,
+      ),
+      _NotificationItem(
+        userName: 'Karim Meziane',
+        message: l10n.saysTheyFoundYourPhone,
+        timeAgo: '3 hours ago',
+        avatarUrl: 'https://images.unsplash.com/photo-1544723795-432537bda887?w=200',
+        action: NotificationAction.getContact,
+        actionLabel: l10n.getContact,
+        itemTitle: 'Silver iPhone 13',
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,23 +52,28 @@ class NotificationsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const PageHeader(
-                  title: 'Notifications',
-                  subtitle: 'Stay updated on your items',
-                  accentColor:  AppColors.primaryPurple,
+                PageHeader(
+                  title: AppLocalizations.of(context)!.notifications,
+                  subtitle: AppLocalizations.of(context)!.stayUpdatedOnItems,
+                  accentColor: AppColors.primaryPurple,
                 ),
                 const SizedBox(height: 8),
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: _notifications.length,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 24, top: 12),
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final item = _notifications[index];
-                      return _NotificationCard(
-                        item: item,
-                        onAction: () => _handleAction(context, item),
+                  child: Builder(
+                    builder: (context) {
+                      final notifications = _getNotifications(context);
+                      return ListView.separated(
+                        itemCount: notifications.length,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(bottom: 24, top: 12),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final item = notifications[index];
+                          return _NotificationCard(
+                            item: item,
+                            onAction: () => _handleAction(context, item),
+                          );
+                        },
                       );
                     },
                   ),
@@ -84,14 +93,14 @@ class NotificationsPage extends StatelessWidget {
           context: context,
           builder: (_) => PaymentPopup(
             userName: item.userName,
-            itemTitle: item.itemTitle ?? 'your item',
+            itemTitle: item.itemTitle ?? AppLocalizations.of(context)!.yourItem,
           ),
         );
         break;
       case NotificationAction.confirmReturn:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Thanks! We marked ${item.userName} as reunited.'),
+            content: Text(AppLocalizations.of(context)!.thanksMarkedAsReunited(item.userName)),
             behavior: SnackBarBehavior.floating,
           ),
         );

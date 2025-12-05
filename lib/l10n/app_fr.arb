@@ -1,0 +1,48 @@
+{
+  "@@locale": "fr",
+  "foundItems": "Objets Trouvés",
+  "helpReuniteItems": "Aidez à réunir les objets avec leurs propriétaires",
+  "searchItemsTagsLocations": "Rechercher des objets, des tags, des lieux...",
+  "lostItems": "Objets Perdus",
+  "helpFindLostBelongings": "Aidez les gens à retrouver leurs objets perdus",
+  "searchLostItems": "Rechercher des objets perdus...",
+  "notifications": "Notifications",
+  "stayUpdatedOnItems": "Restez informé sur vos objets",
+  "saysTheyFoundYourLostWallet": "dit qu'il a trouvé votre portefeuille perdu !",
+  "unlockedYourContactInformation": "a déverrouillé vos informations de contact",
+  "saysTheyFoundYourPhone": "dit qu'il a trouvé votre téléphone !",
+  "getContact": "Obtenir le Contact",
+  "yesIGotMyItemBack": "Oui, j'ai récupéré mon objet",
+  "thanksMarkedAsReunited": "Merci ! Nous avons marqué {userName} comme réuni.",
+  "@thanksMarkedAsReunited": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "yourItem": "votre objet",
+  "reportFoundItem": "Signaler un Objet Trouvé",
+  "fillDetailsFoundItem": "Remplissez les détails sur l'objet trouvé",
+  "uploadPhotos": "Télécharger des Photos",
+  "clickToUploadImages": "Cliquez pour télécharger des images",
+  "pngJpgUpTo10MB": "PNG, JPG jusqu'à 10 Mo",
+  "description": "Description",
+  "describeFoundItemDetail": "Décrivez l'objet trouvé en détail...",
+  "location": "Lieu",
+  "whereDidYouFindIt": "Où l'avez-vous trouvé ?",
+  "tagsCommaSeparated": "Tags (séparés par des virgules)",
+  "walletKeysPhone": "portefeuille, clés, téléphone...",
+  "cancel": "Annuler",
+  "submitPost": "Publier",
+  "foundItemPostedSuccessfully": "Objet trouvé publié avec succès !",
+  "reportLostItem": "Signaler un Objet Perdu",
+  "fillDetailsLostItem": "Remplissez les détails sur l'objet perdu",
+  "describeLostItemDetail": "Décrivez l'objet perdu en détail...",
+  "whereDidYouLoseIt": "Où l'avez-vous perdu ?",
+  "lostItemPostedSuccessfully": "Objet perdu publié avec succès !",
+  "lqitha": "LQitha",
+  "lqitou": "LQitou",
+  "rewardOffered": "Récompense offerte"
+}
+
