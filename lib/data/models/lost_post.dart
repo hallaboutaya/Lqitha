@@ -1,15 +1,15 @@
 class LostPost {
-  final String id;
-  final String? photo;
-  final String? description;
-  final String status;
-  final String? location;
-  final String? category;
-  final String? createdAt;
-  final String? userId;
+  final int? id; // INTEGER PRIMARY KEY AUTOINCREMENT
+  final String? photo; // TEXT
+  final String? description; // TEXT
+  final String status; // TEXT (default 'pending')
+  final String? location; // TEXT
+  final String? category; // TEXT
+  final String? createdAt; // TEXT
+  final int? userId; // INTEGER (FK to users.id)
 
   LostPost({
-    required this.id,
+    this.id,
     this.photo,
     this.description,
     this.status = 'pending',
@@ -21,20 +21,20 @@ class LostPost {
 
   factory LostPost.fromMap(Map<String, dynamic> map) {
     return LostPost(
-      id: map['id'],
+      id: map['id'], // INTEGER
       photo: map['photo'],
       description: map['description'],
       status: map['status'],
       location: map['location'],
       category: map['category'],
       createdAt: map['created_at'],
-      userId: map['user_id'],
+      userId: map['user_id'], // INTEGER
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'id': id, // null when inserting
       'photo': photo,
       'description': description,
       'status': status,

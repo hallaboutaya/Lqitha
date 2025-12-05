@@ -1,17 +1,17 @@
 class User {
-  final String id;
-  final String username;
-  final String email;
-  final String password;
-  final String? phoneNumber;
-  final String? photo;
-  final String role;
-  final int points;
-  final String? createdAt;
-  final String? updatedAt;
+  final int? id; // INTEGER PRIMARY KEY AUTOINCREMENT
+  final String username; // TEXT
+  final String email; // TEXT
+  final String password; // TEXT
+  final String? phoneNumber; // TEXT
+  final String? photo; // TEXT
+  final String role; // TEXT
+  final int points; // INTEGER
+  final String? createdAt; // TEXT
+  final String? updatedAt; // TEXT
 
   User({
-    required this.id,
+    this.id,
     required this.username,
     required this.email,
     required this.password,
@@ -25,7 +25,7 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: map['id'],
+      id: map['id'], // INTEGER
       username: map['username'],
       email: map['email'],
       password: map['password'],
@@ -40,7 +40,7 @@ class User {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'id': id, // nullable when inserting
       'username': username,
       'email': email,
       'password': password,
