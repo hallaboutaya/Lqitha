@@ -21,14 +21,14 @@ class NotificationModel {
 
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
     return NotificationModel(
-      id: map['id'], // INTEGER
+      id: map['id'] is int ? map['id'] : (map['id'] != null ? int.parse(map['id'].toString()) : null),
       title: map['title'],
       message: map['message'],
-      relatedPostId: map['related_post_id'], // INTEGER
+      relatedPostId: map['related_post_id'] is int ? map['related_post_id'] : (map['related_post_id'] != null ? int.parse(map['related_post_id'].toString()) : null),
       type: map['type'],
       isRead: map['is_read'] == 1, // convert 0/1 → bool
       createdAt: map['created_at'],
-      userId: map['user_id'], // INTEGER
+      userId: map['user_id'] is int ? map['user_id'] : (map['user_id'] != null ? int.parse(map['user_id'].toString()) : null),
     );
   }
 

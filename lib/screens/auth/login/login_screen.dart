@@ -1,10 +1,10 @@
-library;
 import 'package:flutter/material.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../widgets/common/background_gradient.dart';
 import '../../../widgets/inputs/text_input.dart';
 import '../../../widgets/common/primary_button.dart';
+import '../../../services/auth_service.dart';
 import '../../admin/admin_dashboard_screen.dart';
 import '../../main_navigation.dart';
 import '../signup/signup_screen.dart';
@@ -38,6 +38,16 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // TODO: Integrate real authentication
       await Future.delayed(const Duration(milliseconds: 600));
+      
+      // Set user ID based on role
+      // User role: ID 1 (Sarah Johnson)
+      // Admin role: ID 5 (Admin User)
+      final int userId = _role == _LoginRole.admin ? 5 : 1;
+      final String role = _role == _LoginRole.admin ? 'admin' : 'user';
+      
+      // Login using AuthService
+      AuthService().login(userId: userId, role: role);
+      
       if (!mounted) return;
       final Widget destination = _role == _LoginRole.admin
           ? const AdminDashboardScreen()

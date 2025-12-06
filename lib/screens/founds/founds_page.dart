@@ -10,13 +10,19 @@
 /// Items are filtered in real-time as the user types in the search bar.
 library;
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../widgets/inputs/search_bar.dart';
 import '../../widgets/cards/found_item_card.dart';
 import '../../widgets/common/page_header.dart';
 import '../../widgets/common/background_gradient.dart';
 import '../../widgets/popups/popup_found_item.dart';
 import '../../theme/app_colors.dart';
+import '../../cubits/found/found_cubit.dart';
+import '../../cubits/found/found_state.dart';
+import '../../data/models/found_post.dart';
+import '../../services/service_locator.dart';
+import '../../data/repositories/user_repository.dart';
 
 class FoundsPage extends StatefulWidget {
   /// Current bottom navigation index (passed from MainNavigation)
@@ -36,103 +42,133 @@ class FoundsPage extends StatefulWidget {
 }
 
 class _FoundsPageState extends State<FoundsPage> {
-  /// Current search query for filtering found items
-  String _searchQuery = '';
+  late final FoundCubit _foundCubit;
+  final UserRepository _userRepository = getIt<UserRepository>();
 
-  final List<Map<String, dynamic>> _founds = [
-    {
-      'userName': 'Sarah Johnson',
-      'timeAgo': '2 hours ago',
-      'description': 'Found a black leather wallet near the metro station. Contains some cards and cash.',
-      'location': 'Algiers Metro',
-      'tags': ['Wallet', 'Cards'],
-      'imageUrl': 'https://placehold.co/301x256',
-      'borderColor': AppColors.primaryPurple,
-    },
-    {
-      'userName': 'Ahmed Benali',
-      'timeAgo': '5 hours ago',
-      'description': 'Set of keys with a red keychain found at the university parking lot.',
-      'location': 'University Campus',
-      'tags': ['Keys', 'Keychain'],
-      'imageUrl': 'https://placehold.co/301x256',
-      'borderColor': AppColors.primaryOrange,
-    },
-    {
-      'userName': 'Amina Kader',
-      'timeAgo': '1 day ago',
-      'description': 'Blue backpack found at the coffee shop. Contains books and a laptop.',
-      'location': 'Café Central',
-      'tags': ['Backpack', 'Electronics'],
-      'imageUrl': 'https://placehold.co/301x256',
-      'borderColor': AppColors.primaryPurple,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Get cubit from service locator
+    _foundCubit = getIt<FoundCubit>();
+    // Load approved posts from database
+    _foundCubit.loadApprovedPosts();
+  }
+
+  @override
+  void dispose() {
+    _foundCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredFounds = _founds.where((item) {
-      final matchesSearch = item['description']!
-          .toString()
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase()) ||
-          item['location']!
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
-      return matchesSearch;
-    }).toList();
 
-    return Scaffold(
-      body: BackgroundGradient(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header Section
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-                child: PageHeader(
-                  title: AppLocalizations.of(context)!.foundItems,
-                  subtitle: AppLocalizations.of(context)!.helpReuniteItems,
+    return BlocProvider.value(
+      value: _foundCubit,
+      child: Scaffold(
+        body: BackgroundGradient(
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header Section
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                  child: PageHeader(
+                    title: AppLocalizations.of(context)!.foundItems,
+                    subtitle: AppLocalizations.of(context)!.helpReuniteItems,
+                  ),
                 ),
-              ),
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CustomSearchBar(
-                  hintText: AppLocalizations.of(context)!.searchItemsTagsLocations,
-                  onChanged: (value) {
-                    setState(() => _searchQuery = value);
-                  },
-                  onFilterTap: () {
-                    // Handle filter tap
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              // List of Found Items
-              Expanded(
-                child: ListView.builder(
+                // Search Bar
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: filteredFounds.length,
-                  itemBuilder: (context, index) {
-                    final item = filteredFounds[index];
-                    return FoundItemCard(
-                      userName: item['userName'] as String,
-                      timeAgo: item['timeAgo'] as String,
-                      description: item['description'] as String,
-                      location: item['location'] as String,
-                      tags: (item['tags'] as List).map((e) => e.toString()).toList(),
-                      imageUrl: item['imageUrl'] as String,
-                      borderColor: item['borderColor'] as Color,
-                    );
-                  },
+                  child: CustomSearchBar(
+                    hintText: AppLocalizations.of(context)!.searchItemsTagsLocations,
+                    onChanged: (value) {
+                      _foundCubit.searchPosts(value);
+                    },
+                    onFilterTap: () {
+                      // Handle filter tap
+                    },
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                // List of Found Items - Using BlocBuilder to listen to state
+                Expanded(
+                  child: BlocBuilder<FoundCubit, FoundState>(
+                    builder: (context, state) {
+                      if (state is FoundLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      
+                      if (state is FoundError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(state.message),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () => _foundCubit.loadApprovedPosts(),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      if (state is FoundLoaded) {
+                        final posts = state.posts;
+                        
+                        if (posts.isEmpty) {
+                          return Center(
+                            child: Text(
+                              state.message ?? 'No found items yet',
+                              style: const TextStyle(color: AppColors.textSecondary),
+                            ),
+                          );
+                        }
+                        
+                        return RefreshIndicator(
+                          onRefresh: () => _foundCubit.refresh(),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: posts.length,
+                            itemBuilder: (context, index) {
+                              final post = posts[index];
+                              // Parse category as tags (comma-separated)
+                              final tags = post.category?.split(',').map((e) => e.trim()).toList() ?? [];
+                              
+                              return FutureBuilder<String?>(
+                                future: post.userId != null 
+                                    ? _userRepository.getUsernameById(post.userId!) 
+                                    : Future.value(null),
+                                builder: (context, snapshot) {
+                                  final userName = snapshot.data ?? 'User ${post.userId ?? 'Unknown'}';
+                                  
+                                  return FoundItemCard(
+                                    userName: userName,
+                                    timeAgo: _formatTimeAgo(post.createdAt),
+                                    description: post.description ?? '',
+                                    location: post.location ?? '',
+                                    tags: tags,
+                                    imageUrl: post.photo ?? 'https://placehold.co/301x256',
+                                    borderColor: AppColors.primaryPurple,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      }
+                      
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       // Floating Action Button for Adding Found Item
       floatingActionButton: Container(
         width: 64,
@@ -191,7 +227,10 @@ class _FoundsPageState extends State<FoundsPage> {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (_) => const FoundItemPopup(),
+                    builder: (dialogContext) => BlocProvider.value(
+                      value: _foundCubit,
+                      child: const FoundItemPopup(),
+                    ),
                   );
                 },
               ),
@@ -200,6 +239,32 @@ class _FoundsPageState extends State<FoundsPage> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
     );
+  }
+  
+  /// Format timestamp to relative time string
+  String _formatTimeAgo(String? createdAt) {
+    if (createdAt == null) return 'Unknown time';
+    
+    try {
+      final date = DateTime.parse(createdAt);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+      
+      if (difference.inMinutes < 1) {
+        return 'Just now';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes} min ago';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+      } else {
+        return '${difference.inDays ~/ 7} week${(difference.inDays ~/ 7) > 1 ? 's' : ''} ago';
+      }
+    } catch (e) {
+      return 'Unknown time';
+    }
   }
 }

@@ -196,4 +196,75 @@ class FoundRepository {
       rethrow;
     }
   }
+
+  /// Get all found posts by status (for admin panel).
+  /// 
+  /// [status] - The status to filter by ('pending', 'approved', 'rejected')
+  /// 
+  /// Returns a list of [FoundPost] objects with the specified status.
+  Future<List<FoundPost>> getPostsByStatus(String status) async {
+    try {
+      final db = await _db;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'found_posts',
+        where: 'status = ?',
+        whereArgs: [status],
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return FoundPost.fromMap(maps[i]);
+      });
+    } catch (e) {
+      print('Error fetching found posts by status: $e');
+      rethrow;
+    }
+  }
+
+  /// Update post status (for admin approval/rejection).
+  /// 
+  /// [postId] - The id of the post to update
+  /// [status] - The new status ('approved' or 'rejected')
+  /// 
+  /// Returns the number of rows affected (should be 1 on success).
+  Future<int> updatePostStatus(int postId, String status) async {
+    try {
+      final db = await _db;
+      
+      final updatedRows = await db.update(
+        'found_posts',
+        {'status': status},
+        where: 'id = ?',
+        whereArgs: [postId],
+      );
+
+      print('Successfully updated found post $postId status to $status');
+      return updatedRows;
+    } catch (e) {
+      print('Error updating found post status: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all found posts (for admin panel - all statuses).
+  /// 
+  /// Returns all found posts regardless of status.
+  Future<List<FoundPost>> getAllPosts() async {
+    try {
+      final db = await _db;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'found_posts',
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return FoundPost.fromMap(maps[i]);
+      });
+    } catch (e) {
+      print('Error fetching all found posts: $e');
+      rethrow;
+    }
+  }
 }

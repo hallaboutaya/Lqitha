@@ -43,6 +43,19 @@
   "lostItemPostedSuccessfully": "تم نشر الشيء المفقود بنجاح!",
   "lqitha": "لقيثة",
   "lqitou": "لقيتو",
-  "rewardOffered": "مكافأة مقدمة"
+  "rewardOffered": "مكافأة مقدمة",
+  "foundThisItem": "هل وجدت هذا الشيء؟",
+  "areYouSureFoundItem": "هل أنت متأكد أنك وجدت هذا الشيء؟ سيتم إشعار المالك.",
+  "yesIFoundIt": "نعم، وجدته!",
+  "ownerNotifiedItemMoved": "رائع! تم إشعار المالك. تم نقل الشيء إلى الأشياء الموجودة.",
+  "someoneFoundYourItem": "وجد شخص ما الشيء الخاص بك!",
+  "goodNewsSomeoneFound": "أخبار جيدة! يقول شخص ما أنه وجد الشيء المفقود الخاص بك: {itemDescription}",
+  "@goodNewsSomeoneFound": {
+    "placeholders": {
+      "itemDescription": {
+        "type": "String"
+      }
+    }
+  }
 }
 

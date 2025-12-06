@@ -43,6 +43,19 @@
   "lostItemPostedSuccessfully": "Objet perdu publié avec succès !",
   "lqitha": "LQitha",
   "lqitou": "LQitou",
-  "rewardOffered": "Récompense offerte"
+  "rewardOffered": "Récompense offerte",
+  "foundThisItem": "Vous avez trouvé cet objet ?",
+  "areYouSureFoundItem": "Êtes-vous sûr d'avoir trouvé cet objet ? Le propriétaire sera notifié.",
+  "yesIFoundIt": "Oui, je l'ai trouvé !",
+  "ownerNotifiedItemMoved": "Excellent ! Le propriétaire a été notifié. L'objet a été déplacé vers les Objets Trouvés.",
+  "someoneFoundYourItem": "Quelqu'un a trouvé votre objet !",
+  "goodNewsSomeoneFound": "Bonne nouvelle ! Quelqu'un dit avoir trouvé votre objet perdu : {itemDescription}",
+  "@goodNewsSomeoneFound": {
+    "placeholders": {
+      "itemDescription": {
+        "type": "String"
+      }
+    }
+  }
 }
 

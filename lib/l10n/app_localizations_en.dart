@@ -121,4 +121,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardOffered => 'Reward offered';
+
+  @override
+  String get foundThisItem => 'Found this item?';
+
+  @override
+  String get areYouSureFoundItem =>
+      'Are you sure you found this item? The owner will be notified.';
+
+  @override
+  String get yesIFoundIt => 'Yes, I found it!';
+
+  @override
+  String get ownerNotifiedItemMoved =>
+      'Great! The owner has been notified. The item has been moved to Found Items.';
+
+  @override
+  String get someoneFoundYourItem => 'Someone found your item!';
+
+  @override
+  String goodNewsSomeoneFound(String itemDescription) {
+    return 'Good news! Someone says they found your lost item: $itemDescription';
+  }
 }

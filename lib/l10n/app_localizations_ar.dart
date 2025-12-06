@@ -122,4 +122,26 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rewardOffered => 'مكافأة مقدمة';
+
+  @override
+  String get foundThisItem => 'هل وجدت هذا الشيء؟';
+
+  @override
+  String get areYouSureFoundItem =>
+      'هل أنت متأكد أنك وجدت هذا الشيء؟ سيتم إشعار المالك.';
+
+  @override
+  String get yesIFoundIt => 'نعم، وجدته!';
+
+  @override
+  String get ownerNotifiedItemMoved =>
+      'رائع! تم إشعار المالك. تم نقل الشيء إلى الأشياء الموجودة.';
+
+  @override
+  String get someoneFoundYourItem => 'وجد شخص ما الشيء الخاص بك!';
+
+  @override
+  String goodNewsSomeoneFound(String itemDescription) {
+    return 'أخبار جيدة! يقول شخص ما أنه وجد الشيء المفقود الخاص بك: $itemDescription';
+  }
 }

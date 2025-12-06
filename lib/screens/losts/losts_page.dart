@@ -10,13 +10,18 @@
 /// Items are filtered in real-time as the user types in the search bar.
 library;
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../widgets/inputs/search_bar.dart';
 import '../../widgets/cards/lost_item_card.dart';
 import '../../widgets/common/background_gradient.dart';
 import '../../widgets/popups/popup_lost_item.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../cubits/lost/lost_cubit.dart';
+import '../../cubits/lost/lost_state.dart';
+import '../../services/service_locator.dart';
+import '../../data/repositories/user_repository.dart';
 
 class LostsPage extends StatefulWidget {
   /// Current bottom navigation index (passed from MainNavigation)
@@ -36,135 +41,165 @@ class LostsPage extends StatefulWidget {
 }
 
 class _LostsPageState extends State<LostsPage> {
-  /// Current search query for filtering lost items
-  String _searchQuery = '';
+  late final LostCubit _lostCubit;
+  final UserRepository _userRepository = getIt<UserRepository>();
 
-  final List<Map<String, dynamic>> _losts = [
-    {
-      'userName': 'Karim Meziane',
-      'timeAgo': 'Yesterday',
-      'description': 'Lost my brown leather wallet with ID cards and bank cards. Last seen at the shopping mall.',
-      'location': 'Bab Ezzouar Mall',
-      'tags': ['Wallet', 'ID'],
-      'imageUrl': 'https://placehold.co/294x256',
-      'borderColor': AppColors.primaryOrange,
-      'hasReward': true,
-    },
-    {
-      'userName': 'Lina Hamdi',
-      'timeAgo': '2 days ago',
-      'description': 'Silver iPhone 13 with a clear case. Lost at the beach yesterday afternoon.',
-      'location': 'Sidi Fredj Beach',
-      'tags': ['Phone', 'Electronics'],
-      'imageUrl': 'https://placehold.co/294x256',
-      'borderColor': AppColors.primaryPurple,
-      'hasReward': false,
-    },
-    {
-      'userName': 'Rayan Boukhari',
-      'timeAgo': '3 days ago',
-      'description': 'Lost my prescription glasses in a black case. Very important, I can barely see without them!',
-      'location': 'Grande Poste',
-      'tags': ['Glasses', 'Medical'],
-      'imageUrl': 'https://placehold.co/294x256',
-      'borderColor': AppColors.primaryOrange,
-      'hasReward': false,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Get cubit from service locator
+    _lostCubit = getIt<LostCubit>();
+    // Load approved posts from database
+    _lostCubit.loadApprovedPosts();
+  }
+
+  @override
+  void dispose() {
+    _lostCubit.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredLosts = _losts.where((item) {
-      final matchesSearch = item['description']!
-          .toString()
-          .toLowerCase()
-          .contains(_searchQuery.toLowerCase()) ||
-          item['location']!
-              .toString()
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
-      return matchesSearch;
-    }).toList();
 
-    return Scaffold(
-      body: BackgroundGradient(
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header Section
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 48,
-                      decoration: ShapeDecoration(
-                        color: AppColors.primaryOrange,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
+    return BlocProvider.value(
+      value: _lostCubit,
+      child: Scaffold(
+        body: BackgroundGradient(
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header Section
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 48,
+                        decoration: ShapeDecoration(
+                          color: AppColors.primaryOrange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.lostItems,
-                            style: AppTextStyles.pageTitle.copyWith(
-                              color: AppColors.primaryOrange,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.lostItems,
+                              style: AppTextStyles.pageTitle.copyWith(
+                                color: AppColors.primaryOrange,
+                              ),
                             ),
-                          ),
-                          Text(
-                            AppLocalizations.of(context)!.helpFindLostBelongings,
-                            style: AppTextStyles.subtitle,
-                          ),
-                        ],
+                            Text(
+                              AppLocalizations.of(context)!.helpFindLostBelongings,
+                              style: AppTextStyles.subtitle,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: CustomSearchBar(
-                  hintText: AppLocalizations.of(context)!.searchLostItems,
-                  onChanged: (value) {
-                    setState(() => _searchQuery = value);
-                  },
-                  onFilterTap: () {
-                    // Handle filter tap
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              // List of Lost Items
-              Expanded(
-                child: ListView.builder(
+                // Search Bar
+                Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: filteredLosts.length,
-                  itemBuilder: (context, index) {
-                    final item = filteredLosts[index];
-                    return LostItemCard(
-                      userName: item['userName'] as String,
-                      timeAgo: item['timeAgo'] as String,
-                      description: item['description'] as String,
-                      location: item['location'] as String,
-                      tags: (item['tags'] as List).map((e) => e.toString()).toList(),
-                      imageUrl: item['imageUrl'] as String,
-                      borderColor: item['borderColor'] as Color,
-                      hasReward: item['hasReward'] as bool,
-                    );
-                  },
+                  child: CustomSearchBar(
+                    hintText: AppLocalizations.of(context)!.searchLostItems,
+                    onChanged: (value) {
+                      _lostCubit.searchPosts(value);
+                    },
+                    onFilterTap: () {
+                      // Handle filter tap
+                    },
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                // List of Lost Items - Using BlocBuilder to listen to state
+                Expanded(
+                  child: BlocBuilder<LostCubit, LostState>(
+                    builder: (context, state) {
+                      if (state is LostLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      
+                      if (state is LostError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(state.message),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () => _lostCubit.loadApprovedPosts(),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      if (state is LostLoaded) {
+                        final posts = state.posts;
+                        
+                        if (posts.isEmpty) {
+                          return Center(
+                            child: Text(
+                              state.message ?? 'No lost items yet',
+                              style: const TextStyle(color: AppColors.textSecondary),
+                            ),
+                          );
+                        }
+                        
+                        return RefreshIndicator(
+                          onRefresh: () => _lostCubit.refresh(),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: posts.length,
+                            itemBuilder: (context, index) {
+                              final post = posts[index];
+                              // Parse category as tags (comma-separated)
+                              final tags = post.category?.split(',').map((e) => e.trim()).toList() ?? [];
+                              
+                              return FutureBuilder<String?>(
+                                future: post.userId != null 
+                                    ? _userRepository.getUsernameById(post.userId!) 
+                                    : Future.value(null),
+                                builder: (context, snapshot) {
+                                  final userName = snapshot.data ?? 'User ${post.userId ?? 'Unknown'}';
+                                  
+                                  return LostItemCard(
+                                    postId: post.id!,
+                                    postOwnerId: post.userId!,
+                                    userName: userName,
+                                    timeAgo: _formatTimeAgo(post.createdAt),
+                                    description: post.description ?? '',
+                                    location: post.location ?? '',
+                                    tags: tags,
+                                    imageUrl: post.photo ?? 'https://placehold.co/294x256',
+                                    photoUrl: post.photo,
+                                    borderColor: AppColors.primaryOrange,
+                                    hasReward: false, // TODO: Add reward field to model
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      }
+                      
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
       // Floating Action Button for Adding Lost Item
       floatingActionButton: Container(
         width: 64,
@@ -223,7 +258,10 @@ class _LostsPageState extends State<LostsPage> {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (_) => const LostItemPopup(),
+                    builder: (dialogContext) => BlocProvider.value(
+                      value: _lostCubit,
+                      child: const LostItemPopup(),
+                    ),
                   );
                 },
               ),
@@ -232,7 +270,33 @@ class _LostsPageState extends State<LostsPage> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
     );
+  }
+  
+  /// Format timestamp to relative time string
+  String _formatTimeAgo(String? createdAt) {
+    if (createdAt == null) return 'Unknown time';
+    
+    try {
+      final date = DateTime.parse(createdAt);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+      
+      if (difference.inMinutes < 1) {
+        return 'Just now';
+      } else if (difference.inMinutes < 60) {
+        return '${difference.inMinutes} min ago';
+      } else if (difference.inHours < 24) {
+        return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+      } else {
+        return '${difference.inDays ~/ 7} week${(difference.inDays ~/ 7) > 1 ? 's' : ''} ago';
+      }
+    } catch (e) {
+      return 'Unknown time';
+    }
   }
 }
 

@@ -11,8 +11,11 @@
 /// Styled with purple theme to match found items.
 library;
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
+import '../../cubits/found/found_cubit.dart';
+import '../../data/models/found_post.dart';
 
 class FoundItemPopup extends StatefulWidget {
   const FoundItemPopup({super.key});
@@ -401,15 +404,33 @@ class _FoundItemPopupState extends State<FoundItemPopup> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: InkWell(
-                              onTap: () {
+                              onTap: () async {
                                 if (_formKey.currentState!.validate()) {
-                                  // TODO: Handle submission with backend
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(AppLocalizations.of(context)!.foundItemPostedSuccessfully),
-                                    ),
+                                  // Get cubit from context
+                                  final foundCubit = context.read<FoundCubit>();
+                                  
+                                  // Create FoundPost from form data
+                                  final post = FoundPost(
+                                    photo: null, // TODO: Add image picker support
+                                    description: _descriptionController.text.trim(),
+                                    location: _locationController.text.trim(),
+                                    category: _tagsController.text.trim(),
+                                    createdAt: DateTime.now().toIso8601String(),
+                                    userId: 1, // TODO: Replace with actual logged-in user ID
+                                    status: 'pending', // New posts start as pending
                                   );
+                                  
+                                  // Save to database via cubit
+                                  await foundCubit.addPost(post);
+                                  
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(AppLocalizations.of(context)!.foundItemPostedSuccessfully),
+                                      ),
+                                    );
+                                  }
                                 }
                               },
                               child: Container(

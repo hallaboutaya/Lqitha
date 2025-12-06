@@ -196,4 +196,98 @@ class LostRepository {
       rethrow;
     }
   }
+
+  /// Get all lost posts by status (for admin panel).
+  /// 
+  /// [status] - The status to filter by ('pending', 'approved', 'rejected')
+  /// 
+  /// Returns a list of [LostPost] objects with the specified status.
+  Future<List<LostPost>> getPostsByStatus(String status) async {
+    try {
+      final db = await _db;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'lost_posts',
+        where: 'status = ?',
+        whereArgs: [status],
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return LostPost.fromMap(maps[i]);
+      });
+    } catch (e) {
+      print('Error fetching lost posts by status: $e');
+      rethrow;
+    }
+  }
+
+  /// Update post status (for admin approval/rejection).
+  /// 
+  /// [postId] - The id of the post to update
+  /// [status] - The new status ('approved' or 'rejected')
+  /// 
+  /// Returns the number of rows affected (should be 1 on success).
+  Future<int> updatePostStatus(int postId, String status) async {
+    try {
+      final db = await _db;
+      
+      final updatedRows = await db.update(
+        'lost_posts',
+        {'status': status},
+        where: 'id = ?',
+        whereArgs: [postId],
+      );
+
+      print('Successfully updated lost post $postId status to $status');
+      return updatedRows;
+    } catch (e) {
+      print('Error updating lost post status: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all lost posts (for admin panel - all statuses).
+  /// 
+  /// Returns all lost posts regardless of status.
+  Future<List<LostPost>> getAllPosts() async {
+    try {
+      final db = await _db;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'lost_posts',
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return LostPost.fromMap(maps[i]);
+      });
+    } catch (e) {
+      print('Error fetching all lost posts: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a lost post by ID.
+  /// 
+  /// [postId] - The id of the post to delete
+  /// 
+  /// Returns the number of rows affected (should be 1 on success).
+  Future<int> deletePost(int postId) async {
+    try {
+      final db = await _db;
+      
+      final deletedRows = await db.delete(
+        'lost_posts',
+        where: 'id = ?',
+        whereArgs: [postId],
+      );
+
+      print('Successfully deleted lost post $postId');
+      return deletedRows;
+    } catch (e) {
+      print('Error deleting lost post: $e');
+      rethrow;
+    }
+  }
 }

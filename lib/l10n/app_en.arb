@@ -152,6 +152,35 @@
   "rewardOffered": "Reward offered",
   "@rewardOffered": {
     "description": "Badge text for items with reward"
+  },
+  "foundThisItem": "Found this item?",
+  "@foundThisItem": {
+    "description": "Title for confirmation dialog when user clicks Lqitou"
+  },
+  "areYouSureFoundItem": "Are you sure you found this item? The owner will be notified.",
+  "@areYouSureFoundItem": {
+    "description": "Confirmation message when user clicks Lqitou"
+  },
+  "yesIFoundIt": "Yes, I found it!",
+  "@yesIFoundIt": {
+    "description": "Confirmation button text in Lqitou dialog"
+  },
+  "ownerNotifiedItemMoved": "Great! The owner has been notified. The item has been moved to Found Items.",
+  "@ownerNotifiedItemMoved": {
+    "description": "Success message after converting lost post to found post"
+  },
+  "someoneFoundYourItem": "Someone found your item!",
+  "@someoneFoundYourItem": {
+    "description": "Notification title when someone finds a lost item"
+  },
+  "goodNewsSomeoneFound": "Good news! Someone says they found your lost item: {itemDescription}",
+  "@goodNewsSomeoneFound": {
+    "description": "Notification message when someone finds a lost item",
+    "placeholders": {
+      "itemDescription": {
+        "type": "String"
+      }
+    }
   }
 }
 

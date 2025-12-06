@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../models/profile_post_model.dart';
+import '../../data/models/found_post.dart';
+import '../../data/models/lost_post.dart';
+import '../../data/databases/db_helper.dart';
 import 'post_card.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class MyPostsTabs extends StatefulWidget {
-  const MyPostsTabs({super.key});
+  final int userId;
+  
+  const MyPostsTabs({super.key, required this.userId});
 
   @override
   State<MyPostsTabs> createState() => _MyPostsTabsState();
@@ -11,38 +17,108 @@ class MyPostsTabs extends StatefulWidget {
 
 class _MyPostsTabsState extends State<MyPostsTabs> {
   int _selectedIndex = 0;
+  List<ProfilePost> validatedPosts = [];
+  List<ProfilePost> onHoldPosts = [];
+  List<ProfilePost> rejectedPosts = [];
+  bool _isLoading = true;
 
-  final List<ProfilePost> validatedPosts = [
-    const ProfilePost(
-      title: 'Found a black leather wallet near',
-      location: 'Agdal Metro',
-      imageUrl: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400',
-      status: 'validated',
-      date: '2h ago',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPosts();
+  }
 
-  final List<ProfilePost> onHoldPosts = [
-    const ProfilePost(
-      title: 'Lost my silver iPhone with a clear case',
-      location: 'Bab El Ouzar Mall',
-      imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400',
-      status: 'on_hold',
-      date: '1d ago',
-      note: 'Waiting for admin approval',
-    ),
-  ];
+  Future<void> _loadUserPosts() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final db = await DBHelper.getDatabase();
+      
+      // Fetch found posts for THIS USER ONLY
+      final foundMaps = await db.query(
+        'found_posts',
+        where: 'user_id = ?',
+        whereArgs: [widget.userId],
+      );
+      
+      // Fetch lost posts for THIS USER ONLY
+      final lostMaps = await db.query(
+        'lost_posts',
+        where: 'user_id = ?',
+        whereArgs: [widget.userId],
+      );
+      
+      // Convert to ProfilePost models
+      final List<ProfilePost> allPosts = [];
+      
+      for (final map in foundMaps) {
+        final foundPost = FoundPost.fromMap(map);
+        allPosts.add(_convertToProfilePost(foundPost, isFound: true));
+      }
+      
+      for (final map in lostMaps) {
+        final lostPost = LostPost.fromMap(map);
+        allPosts.add(_convertToProfilePost(lostPost, isFound: false));
+      }
+      
+      // Group by status
+      setState(() {
+        validatedPosts = allPosts.where((p) => p.status == 'validated').toList();
+        onHoldPosts = allPosts.where((p) => p.status == 'on_hold').toList();
+        rejectedPosts = allPosts.where((p) => p.status == 'rejected').toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading user posts: $e');
+      setState(() => _isLoading = false);
+    }
+  }
 
-  final List<ProfilePost> rejectedPosts = [
-    const ProfilePost(
-      title: 'Blue backpack found at the coffee shop',
-      location: 'Café Centrale',
-      imageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=400',
-      status: 'rejected',
-      date: '3d ago',
-      note: 'Image quality too low. Please upload clearer photo.',
-    ),
-  ];
+  ProfilePost _convertToProfilePost(dynamic post, {required bool isFound}) {
+    final String postType = isFound ? 'Found' : 'Lost';
+    final String description = post.description ?? 'No description';
+    final String category = post.category ?? 'Item';
+    
+    // Map database status to UI status
+    String uiStatus;
+    String? note;
+    
+    switch (post.status) {
+      case 'approved':
+        uiStatus = 'validated';
+        break;
+      case 'pending':
+        uiStatus = 'on_hold';
+        note = 'Waiting for admin approval';
+        break;
+      case 'rejected':
+        uiStatus = 'rejected';
+        note = 'Post was rejected by admin';
+        break;
+      default:
+        uiStatus = 'on_hold';
+    }
+    
+    // Format date
+    String dateStr = 'Unknown';
+    if (post.createdAt != null) {
+      try {
+        final createdDate = DateTime.parse(post.createdAt!);
+        dateStr = timeago.format(createdDate);
+      } catch (e) {
+        dateStr = post.createdAt!;
+      }
+    }
+    
+    return ProfilePost(
+      title: '$postType: $category - ${description.length > 40 ? description.substring(0, 40) + '...' : description}',
+      location: post.location ?? 'Unknown location',
+      imageUrl: post.photo ?? 'https://via.placeholder.com/400',
+      status: uiStatus,
+      date: dateStr,
+      note: note,
+    );
+  }
 
   List<ProfilePost> get _currentPosts {
     if (_selectedIndex == 0) return validatedPosts;
@@ -69,11 +145,28 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
           ],
         ),
         const SizedBox(height: 12),
-        Column(
-          children: _currentPosts
-              .map((post) => PostCard(post: post))
-              .toList(),
-        ),
+        _isLoading
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : _currentPosts.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Text(
+                        'No posts in this category',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: _currentPosts
+                        .map((post) => PostCard(post: post))
+                        .toList(),
+                  ),
       ],
     );
   }

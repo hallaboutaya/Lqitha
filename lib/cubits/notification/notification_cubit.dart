@@ -59,14 +59,18 @@ class NotificationCubit extends Cubit<NotificationState> {
       _currentFilter = 'all';
 
       // Emit loaded state with notifications and unread count
-      emit(NotificationLoaded(
-        notifications: notifications,
-        unreadCount: unreadCount,
-        message: notifications.isEmpty ? 'No notifications yet' : null,
-      ));
+      if (!isClosed) {
+        emit(NotificationLoaded(
+          notifications: notifications,
+          unreadCount: unreadCount,
+          message: notifications.isEmpty ? 'No notifications yet' : null,
+        ));
+      }
     } catch (e) {
       // Emit error state with user-friendly message
-      emit(NotificationError('Failed to load notifications. Please try again.'));
+      if (!isClosed) {
+        emit(NotificationError('Failed to load notifications. Please try again.'));
+      }
       print('Error in loadAllNotifications: $e');
     }
   }

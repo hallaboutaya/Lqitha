@@ -25,7 +25,7 @@ class User {
 
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: map['id'], // INTEGER
+      id: map['id'] is int ? map['id'] : (map['id'] != null ? int.parse(map['id'].toString()) : null),
       username: map['username'],
       email: map['email'],
       password: map['password'],
@@ -39,8 +39,7 @@ class User {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id, // nullable when inserting
+    final map = <String, dynamic>{
       'username': username,
       'email': email,
       'password': password,
@@ -51,5 +50,12 @@ class User {
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
+    
+    // Only include id if it's not null (for updates)
+    if (id != null) {
+      map['id'] = id;
+    }
+    
+    return map;
   }
 }

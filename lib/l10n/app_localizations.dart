@@ -321,6 +321,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reward offered'**
   String get rewardOffered;
+
+  /// Title for confirmation dialog when user clicks Lqitou
+  ///
+  /// In en, this message translates to:
+  /// **'Found this item?'**
+  String get foundThisItem;
+
+  /// Confirmation message when user clicks Lqitou
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you found this item? The owner will be notified.'**
+  String get areYouSureFoundItem;
+
+  /// Confirmation button text in Lqitou dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, I found it!'**
+  String get yesIFoundIt;
+
+  /// Success message after converting lost post to found post
+  ///
+  /// In en, this message translates to:
+  /// **'Great! The owner has been notified. The item has been moved to Found Items.'**
+  String get ownerNotifiedItemMoved;
+
+  /// Notification title when someone finds a lost item
+  ///
+  /// In en, this message translates to:
+  /// **'Someone found your item!'**
+  String get someoneFoundYourItem;
+
+  /// Notification message when someone finds a lost item
+  ///
+  /// In en, this message translates to:
+  /// **'Good news! Someone says they found your lost item: {itemDescription}'**
+  String goodNewsSomeoneFound(String itemDescription);
 }
 
 class _AppLocalizationsDelegate
