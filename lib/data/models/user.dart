@@ -1,5 +1,5 @@
 class User {
-  final String id;
+  final int? id;
   final String username;
   final String email;
   final String password;
@@ -11,7 +11,7 @@ class User {
   final String? updatedAt;
 
   User({
-    required this.id,
+    this.id,
     required this.username,
     required this.email,
     required this.password,

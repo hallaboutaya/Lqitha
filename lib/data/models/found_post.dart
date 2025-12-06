@@ -1,15 +1,17 @@
 class FoundPost {
-  final String id;
+  final int? id;
   final String? photo;
   final String? description;
   final String status;
   final String? location;
   final String? category;
   final String? createdAt;
-  final String? userId;
+  final int? userId;
+  String? username;
+  String? userPhoto;
 
   FoundPost({
-    required this.id,
+    this.id,
     this.photo,
     this.description,
     this.status = 'pending',
@@ -17,6 +19,8 @@ class FoundPost {
     this.category,
     this.createdAt,
     this.userId,
+    this.username,
+    this.userPhoto,
   });
 
   factory FoundPost.fromMap(Map<String, dynamic> map) {
@@ -29,6 +33,8 @@ class FoundPost {
       category: map['category'],
       createdAt: map['created_at'],
       userId: map['user_id'],
+      username: map['username'],
+      userPhoto: map['user_photo'],
     );
   }
 

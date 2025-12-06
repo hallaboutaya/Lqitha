@@ -17,7 +17,7 @@ class DBHelper {
         // USERS TABLE
         await db.execute('''
           CREATE TABLE users (
-            id TEXT PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             username TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
@@ -33,14 +33,14 @@ class DBHelper {
         // LOST POSTS TABLE
         await db.execute('''
           CREATE TABLE lost_posts (
-            id TEXT PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             photo TEXT,
             description TEXT,
             status TEXT DEFAULT 'pending',
             location TEXT,
             category TEXT,
             created_at TEXT,
-            user_id TEXT,
+            user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
           )
         ''');
@@ -48,14 +48,14 @@ class DBHelper {
         // FOUND POSTS TABLE
         await db.execute('''
           CREATE TABLE found_posts (
-            id TEXT PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             photo TEXT,
             description TEXT,
             status TEXT DEFAULT 'pending',
             location TEXT,
             category TEXT,
             created_at TEXT,
-            user_id TEXT,
+            user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
           )
         ''');
@@ -63,19 +63,18 @@ class DBHelper {
         // NOTIFICATIONS TABLE
         await db.execute('''
           CREATE TABLE notifications (
-            id TEXT PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             title TEXT NOT NULL,
             message TEXT NOT NULL,
-            related_post_id TEXT,
+            related_post_id INTEGER,
             type TEXT,
             is_read INTEGER DEFAULT 0,
             created_at TEXT,
-            user_id TEXT,
+            user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
           )
         ''');
       },
-      onUpgrade: (db, oldVersion, newVersion) {},
     );
 
     return _database!;

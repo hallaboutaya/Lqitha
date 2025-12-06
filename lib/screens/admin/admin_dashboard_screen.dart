@@ -1,319 +1,298 @@
-// lib/screens/admin/admin_dashboard_screen.dart
+// ============================================
+// FILE: lib/screens/admin/admin_dashboard_screen.dart
+// ============================================
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/admin_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../cubits/admin/admin_cubit.dart';
+import '../../cubits/admin/admin_state.dart';
 import '../../widgets/admin/stat_card.dart';
+import '../../widgets/admin/tab_selector.dart';
 import '../../widgets/admin/post_card.dart';
+import '../../l10n/app_localizations.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({Key? key}) : super(key: key);
 
   @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<AdminCubit>().loadPendingPosts();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header section
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'LQitha Admin',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Manage posts and platform activity',
-                    style: TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+        child: BlocBuilder<AdminCubit, AdminState>(
+          builder: (context, state) {
+            if (state is AdminLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is AdminError) {
+              return Center(child: Text('Error: ${state.message}'));
+            }
+
+            if (state is AdminLoaded) {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepOrange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Admin Panel'),
+                      _buildHeader(localizations),
+                      const SizedBox(height: 24),
+                      _buildStatistics(state.statistics),
+                      const SizedBox(height: 24),
+                      _buildSearchBar(),
+                      const SizedBox(height: 24),
+                      TabSelector(
+                        currentTab: state.currentTab,
+                        onTabChanged: (tab) {
+                          context.read<AdminCubit>().toggleTab(tab);
+                        },
                       ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.logout, size: 16),
-                        label: const Text('Logout'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.grey[700],
-                          side: BorderSide(color: Colors.grey[300]!),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 24),
+                      _buildPostsList(state),
                     ],
                   ),
-                ],
-              ),
-            ),
-
-            // Scrollable content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Statistics cards grid
-                    Consumer<AdminProvider>(
-                      builder: (context, provider, child) {
-                        return GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.4,
-                          children: [
-                            StatCard(
-                              title: 'Total Posts',
-                              value: '${provider.totalPosts}',
-                              backgroundColor: Colors.purple,
-                              icon: Icons.bar_chart,
-                            ),
-                            StatCard(
-                              title: 'Pending Review',
-                              value: '${provider.pendingCount}',
-                              backgroundColor: Colors.deepOrange,
-                              icon: Icons.filter_alt,
-                            ),
-                            StatCard(
-                              title: 'Approved Today',
-                              value: '${provider.approvedTodayCount}',
-                              backgroundColor: Colors.green,
-                              icon: Icons.check_circle,
-                            ),
-                            StatCard(
-                              title: 'Active Users',
-                              value: '${provider.activeUsers}',
-                              backgroundColor: Colors.purple,
-                              icon: Icons.trending_up,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Search bar and filters
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  spreadRadius: 1,
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: TextField(
-                              onChanged: (value) {
-                                context.read<AdminProvider>().setSearchQuery(
-                                  value,
-                                );
-                              },
-                              decoration: InputDecoration(
-                                hintText: 'Search posts...',
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: Colors.grey[400],
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.filter_list),
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Tabs section
-                    Consumer<AdminProvider>(
-                      builder: (context, provider, child) {
-                        return Row(
-                          children: [
-                            _buildTab(
-                              context,
-                              'Pending (${provider.pendingCount})',
-                              'pending',
-                              provider.selectedTab == 'pending',
-                            ),
-                            const SizedBox(width: 12),
-                            _buildTab(
-                              context,
-                              'Approved',
-                              'approved',
-                              provider.selectedTab == 'approved',
-                            ),
-                            const SizedBox(width: 12),
-                            _buildTab(
-                              context,
-                              'Rejected',
-                              'rejected',
-                              provider.selectedTab == 'rejected',
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Posts list
-                    Consumer<AdminProvider>(
-                      builder: (context, provider, child) {
-                        final posts = provider.filteredPosts;
-
-                        if (posts.isEmpty) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(32),
-                              child: Text(
-                                'No posts found',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: posts.length,
-                          itemBuilder: (context, index) {
-                            final post = posts[index];
-                            return PostCard(
-                              post: post,
-                              onApprove: () {
-                                provider.approvePost(post.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Post approved successfully'),
-                                    backgroundColor: Colors.green,
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              },
-                              onReject: () {
-                                provider.rejectPost(post.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Post rejected'),
-                                    backgroundColor: Colors.red,
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ],
                 ),
-              ),
-            ),
-          ],
+              );
+            }
+
+            return const SizedBox();
+          },
         ),
       ),
     );
   }
 
-  Widget _buildTab(
-    BuildContext context,
-    String label,
-    String value,
-    bool isSelected,
-  ) {
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          context.read<AdminProvider>().setSelectedTab(value);
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.black87 : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected ? Colors.black87 : Colors.grey[300]!,
+  Widget _buildHeader(AppLocalizations? localizations) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Lqitha Admin',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Manage posts and platform activity',
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: const Text('Admin Panel'),
+              ),
             ),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? Colors.white : Colors.black87,
+            const SizedBox(width: 12),
+            OutlinedButton(
+              onPressed: () {},
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.grey[700],
+                side: BorderSide(color: Colors.grey[300]!),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 20,
+                ),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.logout, size: 18),
+                  SizedBox(width: 4),
+                  Text('Logout'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatistics(Map<String, int> stats) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 1.5,
+      children: [
+        StatCard(
+          title: 'Total Posts',
+          value: stats['totalPosts'].toString(),
+          icon: Icons.article,
+          color: Colors.purple,
+        ),
+        StatCard(
+          title: 'Pending Review',
+          value: stats['pendingReview'].toString(),
+          icon: Icons.pending,
+          color: Colors.orange,
+        ),
+        StatCard(
+          title: 'Approved Today',
+          value: stats['approvedToday'].toString(),
+          icon: Icons.check_circle,
+          color: Colors.green,
+        ),
+        StatCard(
+          title: 'Total Income',
+          value: '${stats['totalIncome']}',
+          icon: Icons.trending_up,
+          color: Colors.purple,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search posts...',
+              prefixIcon: const Icon(Icons.search, color: Colors.grey),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
           ),
         ),
-      ),
+        const SizedBox(width: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.filter_list),
+            color: Colors.black,
+          ),
+        ),
+      ],
     );
+  }
+
+  Widget _buildPostsList(AdminLoaded state) {
+    // Build separate lists for found and lost posts
+    final foundPosts = state.foundPosts;
+    final lostPosts = state.lostPosts;
+    final totalCount = foundPosts.length + lostPosts.length;
+
+    if (totalCount == 0) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Text(
+            'No posts to review',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: totalCount,
+      itemBuilder: (context, index) {
+        // Found posts come first, then lost posts
+        if (index < foundPosts.length) {
+          final post = foundPosts[index];
+          final postId = post.id;
+          if (postId == null) {
+            return const SizedBox.shrink();
+          }
+
+          return PostCard(
+            id: postId,
+            type: 'found',
+            photo: post.photo,
+            username: post.username,
+            userPhoto: post.userPhoto,
+            createdAt: post.createdAt,
+            postType: 'found',
+            description: post.description,
+            location: post.location,
+            category: post.category,
+            onApprove: () {
+              context.read<AdminCubit>().approvePost(postId, 'found');
+            },
+            onReject: () {
+              context.read<AdminCubit>().rejectPost(postId, 'found');
+            },
+          );
+        } else {
+          final lostIndex = index - foundPosts.length;
+          final post = lostPosts[lostIndex];
+          final postId = post.id;
+          if (postId == null) {
+            return const SizedBox.shrink();
+          }
+
+          return PostCard(
+            id: postId,
+            type: 'lost',
+            photo: post.photo,
+            username: post.username,
+            userPhoto: post.userPhoto,
+            createdAt: post.createdAt,
+            postType: 'lost',
+            description: post.description,
+            location: post.location,
+            category: post.category,
+            onApprove: () {
+              context.read<AdminCubit>().approvePost(postId, 'lost');
+            },
+            onReject: () {
+              context.read<AdminCubit>().rejectPost(postId, 'lost');
+            },
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
