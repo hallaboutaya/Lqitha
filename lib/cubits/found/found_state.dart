@@ -26,11 +26,30 @@ class FoundLoaded extends FoundState {
 
   /// Optional message to display (e.g., "No posts found" or success messages)
   final String? message;
+  
+  /// IDs of posts that have been unlocked by the current user
+  final Set<String> unlockedPostIds;
 
   FoundLoaded({
     required this.posts,
     this.message,
+    this.unlockedPostIds = const {},
   });
+  
+  /// Helper to check if a post is unlocked
+  bool isUnlocked(String postId) => unlockedPostIds.contains(postId);
+  
+  FoundLoaded copyWith({
+    List<FoundPost>? posts,
+    String? message,
+    Set<String>? unlockedPostIds,
+  }) {
+    return FoundLoaded(
+      posts: posts ?? this.posts,
+      message: message ?? this.message,
+      unlockedPostIds: unlockedPostIds ?? this.unlockedPostIds,
+    );
+  }
 }
 
 /// Error state when something goes wrong.

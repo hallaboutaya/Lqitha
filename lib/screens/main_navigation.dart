@@ -79,8 +79,10 @@ class _MainNavigationState extends State<MainNavigation> {
           FoundsPage(currentIndex: _currentIndex, onNavTap: _onItemTapped),
           // Losts page - displays lost items
           LostsPage(currentIndex: _currentIndex, onNavTap: _onItemTapped),
-          // Notifications page
-          const NotificationsPage(),
+          // Notifications page - reload when visible
+          NotificationsPage(
+            isVisible: _currentIndex == 2,
+          ),
           // Profile page
           const MainProfilePage(),
         ],

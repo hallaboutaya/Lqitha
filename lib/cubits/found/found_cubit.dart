@@ -1,6 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/found_post.dart';
 import '../../data/repositories/found_repository.dart';
+import '../../data/repositories/unlock_repository.dart';
+import '../../core/logging/app_logger.dart';
+import '../../core/errors/app_exceptions.dart';
 import 'found_state.dart';
 
 /// Cubit for managing Found Posts state.
@@ -16,12 +19,13 @@ import 'found_state.dart';
 class FoundCubit extends Cubit<FoundState> {
   /// Repository instance for database operations
   final FoundRepository _repository;
+  final UnlockRepository _unlockRepository;
 
   /// Cache of all loaded posts for client-side filtering
   List<FoundPost> _allPosts = [];
 
   /// Constructor initializes cubit with FoundInitial state
-  FoundCubit(this._repository) : super(FoundInitial());
+  FoundCubit(this._repository, this._unlockRepository) : super(FoundInitial());
 
   /// Load all approved found posts from the database.
   /// 
@@ -42,21 +46,31 @@ class FoundCubit extends Cubit<FoundState> {
       emit(FoundLoading());
 
       // Fetch only approved posts from database
-      // Pending posts won't appear until admin approves them
       final posts = await _repository.getApprovedPosts();
+      
+      // Fetch unlocked post IDs for the current user
+      final unlocks = await _unlockRepository.getUserUnlocks();
+      final unlockedIds = unlocks
+          .where((u) => u.postType == 'found')
+          .map((u) => u.postId)
+          .toSet();
 
       // Cache posts for client-side search/filter
       _allPosts = posts;
 
-      // Emit loaded state with posts
+      // Emit loaded state with posts and unlock info
       emit(FoundLoaded(
         posts: posts,
+        unlockedPostIds: unlockedIds,
         message: posts.isEmpty ? 'No found items yet' : null,
       ));
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Emit error state with user-friendly message
-      emit(FoundError('Failed to load found items. Please try again.'));
-      print('Error in loadApprovedPosts: $e');
+      AppLogger.e('Error in loadApprovedPosts', e, stackTrace);
+      final errorMessage = e is AppException
+          ? ErrorMessageHelper.getUserFriendlyMessage(e)
+          : ErrorMessageHelper.fromError(e);
+      emit(FoundError(errorMessage));
     }
   }
 
@@ -120,7 +134,7 @@ class FoundCubit extends Cubit<FoundState> {
       emit(FoundLoading());
 
       // Insert post - it will have status='pending' by default
-      final id = await _repository.insertPost(post);
+      await _repository.insertPost(post);
 
       // Emit success message
       emit(FoundSuccess(
@@ -191,10 +205,23 @@ class FoundCubit extends Cubit<FoundState> {
   }
 
   /// Refresh the posts list.
-  /// 
-  /// Convenience method that just calls loadApprovedPosts.
-  /// Can be connected to pull-to-refresh UI.
   Future<void> refresh() async {
     await loadApprovedPosts();
+  }
+
+  /// Mark a post as unlocked in the local state and database
+  Future<void> unlockPost(String postId) async {
+    if (state is FoundLoaded) {
+      final current = state as FoundLoaded;
+      try {
+        // The actual API call is made in the PaymentPopup, 
+        // but we can also trigger it here or just refresh.
+        // For robustness, let's allow refreshing the specific poll.
+        final updatedUnlocks = Set<String>.from(current.unlockedPostIds)..add(postId);
+        emit(current.copyWith(unlockedPostIds: updatedUnlocks));
+      } catch (e) {
+        AppLogger.e('Error unlocking post in cubit', e);
+      }
+    }
   }
 }

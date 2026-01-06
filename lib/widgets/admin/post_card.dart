@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:hopefully_last/l10n/app_localizations.dart';
 
 class PostCard extends StatelessWidget {
-  final int id;
+  final dynamic id;
   final String type;
   final String? photo;
   final String? username;
@@ -164,12 +165,12 @@ class PostCard extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check, size: 18),
-                            SizedBox(width: 8),
-                            Text('Approve'),
+                            const Icon(Icons.check, size: 18),
+                            const SizedBox(width: 8),
+                            Text(AppLocalizations.of(context)!.approve),
                           ],
                         ),
                       ),
@@ -186,12 +187,12 @@ class PostCard extends StatelessWidget {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.close, size: 18),
-                            SizedBox(width: 8),
-                            Text('Reject'),
+                            const Icon(Icons.close, size: 18),
+                            const SizedBox(width: 8),
+                            Text(AppLocalizations.of(context)!.reject),
                           ],
                         ),
                       ),

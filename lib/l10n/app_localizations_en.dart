@@ -143,4 +143,274 @@ class AppLocalizationsEn extends AppLocalizations {
   String goodNewsSomeoneFound(String itemDescription) {
     return 'Good news! Someone says they found your lost item: $itemDescription';
   }
+
+  @override
+  String get welcomeToLqitha => 'Welcome to Lqitha';
+
+  @override
+  String get findAndReportLostItems =>
+      'Find and report lost items with the community';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get signInToContinue => 'Sign in to continue to LQitha';
+
+  @override
+  String get user => 'User';
+
+  @override
+  String get admin => 'Admin';
+
+  @override
+  String get signInAsUser => 'Sign in as User';
+
+  @override
+  String get signInAsAdmin => 'Sign in as Admin';
+
+  @override
+  String get dontHaveAccount => 'Don\'t have an account?';
+
+  @override
+  String get signUp => 'Sign up';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get enterYourEmail => 'Enter your email';
+
+  @override
+  String get enterValidEmail => 'Enter a valid email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get enterYourPassword => 'Enter your password';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get enterFullName => 'Enter your full name';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get enterPhoneNumber => 'Enter your phone number';
+
+  @override
+  String get enterValidPhoneNumber => 'Enter a valid phone number';
+
+  @override
+  String get useAtLeast6Characters => 'Use at least 6 characters';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get lqithaAdmin => 'Lqitha Admin';
+
+  @override
+  String get managePostsAndActivity => 'Manage posts and platform activity';
+
+  @override
+  String get adminPanel => 'Admin Panel';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get totalPosts => 'Total Posts';
+
+  @override
+  String get pendingReview => 'Pending Review';
+
+  @override
+  String get approvedToday => 'Approved Today';
+
+  @override
+  String get activeUsers => 'Active Users';
+
+  @override
+  String get searchPosts => 'Search posts...';
+
+  @override
+  String get noPostsToReview => 'No posts to review';
+
+  @override
+  String get postApprovedSuccessfully => 'Post approved successfully';
+
+  @override
+  String get postRejected => 'Post Rejected';
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get postApproved => 'Post Approved';
+
+  @override
+  String adminApprovedYourPost(String postType) {
+    return 'Admin approved your $postType post and it is now visible to users.';
+  }
+
+  @override
+  String adminRejectedYourPost(String postType) {
+    return 'Admin rejected your $postType post.';
+  }
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get profileAndSecurity => 'Profile & Security';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get appSettings => 'App Settings';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get support => 'Support';
+
+  @override
+  String get helpCenter => 'Help Center';
+
+  @override
+  String get aboutLqitha => 'About Lqitha';
+
+  @override
+  String get chooseLanguage => 'Choose Language';
+
+  @override
+  String get manageAlerts => 'Manage your alerts';
+
+  @override
+  String get oldPassword => 'Old Password';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get updatePassword => 'Update Password';
+
+  @override
+  String get setSecurePassword =>
+      'Set a secure password to protect your account';
+
+  @override
+  String get min8Characters => 'Min 8 characters';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get enterOldPassword => 'Enter old password';
+
+  @override
+  String get enterNewPassword => 'Enter new password';
+
+  @override
+  String get passwordChangedSuccessfully => 'Password changed successfully!';
+
+  @override
+  String get emailAddress => 'Email Address';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get nameCannotBeEmpty => 'Name cannot be empty';
+
+  @override
+  String get profilePictureUpdated => 'Profile picture updated!';
+
+  @override
+  String get profileUpdatedSuccessfully => 'Profile updated successfully!';
+
+  @override
+  String get totalPoints => 'Total Points';
+
+  @override
+  String get active => 'Active';
+
+  @override
+  String get keepHelpingOthers => 'Keep helping others to earn more!';
+
+  @override
+  String get reclaimMyPoints => 'Reclaim My Points';
+
+  @override
+  String get itemsFound => 'Items Found';
+
+  @override
+  String get itemsLost => 'Items Lost';
+
+  @override
+  String get recentActivity => 'Recent Activity';
+
+  @override
+  String get notLoggedIn => 'Not logged in';
+
+  @override
+  String get noRecentActivity => 'No recent activity';
+
+  @override
+  String get createPostToEarnPoints => 'Create a post to earn points!';
+
+  @override
+  String get myPosts => 'My Posts';
+
+  @override
+  String get validated => 'Validated';
+
+  @override
+  String get onHold => 'On Hold';
+
+  @override
+  String get rejected => 'Rejected';
+
+  @override
+  String get waitingForAdminApproval => 'Waiting for admin approval';
+
+  @override
+  String get postWasRejectedByAdmin => 'Post was rejected by admin';
+
+  @override
+  String get noPostsInCategory => 'No posts in this category';
+
+  @override
+  String get found => 'Found';
+
+  @override
+  String get lost => 'Lost';
 }

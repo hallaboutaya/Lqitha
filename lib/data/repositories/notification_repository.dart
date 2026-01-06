@@ -20,9 +20,11 @@ class NotificationRepository {
   /// [userId] - The id of the user to fetch notifications for
   /// 
   /// Returns a list of [NotificationModel] objects.
-  Future<List<NotificationModel>> getAllNotifications(int userId) async {
+  Future<List<NotificationModel>> getAllNotifications(dynamic userId) async {
     try {
       final db = await _db;
+      
+      print('🗄️  NotificationRepository: Querying notifications for userId=$userId');
       
       // Query all notifications for this user, ordered by newest first
       final List<Map<String, dynamic>> maps = await db.query(
@@ -31,6 +33,11 @@ class NotificationRepository {
         whereArgs: [userId],
         orderBy: 'created_at DESC',
       );
+
+      print('🗄️  NotificationRepository: Found ${maps.length} notifications in database');
+      for (var map in maps) {
+        print('   - ID: ${map['id']}, Type: ${map['type']}, UserId: ${map['user_id']}');
+      }
 
       // Convert database maps to NotificationModel objects
       return List.generate(maps.length, (i) {
@@ -50,7 +57,7 @@ class NotificationRepository {
   /// [userId] - The id of the user to fetch notifications for
   /// 
   /// Returns a list of unread [NotificationModel] objects.
-  Future<List<NotificationModel>> getUnreadNotifications(int userId) async {
+  Future<List<NotificationModel>> getUnreadNotifications(dynamic userId) async {
     try {
       final db = await _db;
       
@@ -80,7 +87,7 @@ class NotificationRepository {
   /// [notificationId] - The id of the notification to mark as read
   /// 
   /// Returns the number of rows affected (should be 1 on success).
-  Future<int> markAsRead(int notificationId) async {
+  Future<void> markAsRead(dynamic notificationId) async {
     try {
       final db = await _db;
       
@@ -93,7 +100,8 @@ class NotificationRepository {
       );
 
       print('Successfully marked notification $notificationId as read');
-      return updatedRows;
+      // The instruction changed the return type to void, so we don't return updatedRows.
+      // If the original return type was desired, this would be `return updatedRows;`
     } catch (e) {
       print('Error marking notification as read: $e');
       rethrow;
@@ -108,7 +116,7 @@ class NotificationRepository {
   /// [userId] - The id of the user
   /// 
   /// Returns the number of rows affected.
-  Future<int> markAllAsRead(int userId) async {
+  Future<int> markAllAsRead(dynamic userId) async {
     try {
       final db = await _db;
       
@@ -137,7 +145,7 @@ class NotificationRepository {
   /// [notification] - The NotificationModel to insert (id should be null)
   /// 
   /// Returns the id of the newly inserted notification.
-  Future<int> insertNotification(NotificationModel notification) async {
+  Future<dynamic> insertNotification(NotificationModel notification) async {
     try {
       final db = await _db;
       
@@ -163,7 +171,7 @@ class NotificationRepository {
   /// [userId] - The id of the user
   /// 
   /// Returns the count of unread notifications.
-  Future<int> getUnreadCount(int userId) async {
+  Future<int> getUnreadCount(dynamic userId) async {
     try {
       final db = await _db;
       
@@ -189,7 +197,7 @@ class NotificationRepository {
   /// 
   /// Returns a list of [NotificationModel] objects of the specified type.
   Future<List<NotificationModel>> getNotificationsByType(
-    int userId,
+    dynamic userId,
     String type,
   ) async {
     try {

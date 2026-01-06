@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../data/databases/db_helper.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
+import '../../data/repositories/found_repository.dart';
+import '../../data/repositories/lost_repository.dart';
+import '../../services/service_locator.dart';
 
 class StatsCard extends StatefulWidget {
-  final int userId;
+  final dynamic userId; // Can be int (SQLite) or String (UUID from Supabase)
   
   const StatsCard({super.key, required this.userId});
 
@@ -14,6 +17,9 @@ class _StatsCardState extends State<StatsCard> {
   int _foundItemsCount = 0;
   int _lostItemsCount = 0;
   bool _loading = true;
+  
+  final FoundRepository _foundRepository = getIt<FoundRepository>();
+  final LostRepository _lostRepository = getIt<LostRepository>();
 
   @override
   void initState() {
@@ -23,23 +29,13 @@ class _StatsCardState extends State<StatsCard> {
 
   Future<void> _loadStats() async {
     try {
-      final db = await DBHelper.getDatabase();
-      
-      // Count APPROVED found posts by this user
-      final foundResult = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM found_posts WHERE user_id = ? AND status = ?',
-        [widget.userId, 'approved'],
-      );
-      
-      // Count APPROVED lost posts by this user
-      final lostResult = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM lost_posts WHERE user_id = ? AND status = ?',
-        [widget.userId, 'approved'],
-      );
+      // Get all approved posts for this user using repositories
+      final foundPosts = await _foundRepository.getPostsByUserId(widget.userId, status: 'approved');
+      final lostPosts = await _lostRepository.getPostsByUserId(widget.userId, status: 'approved');
       
       setState(() {
-        _foundItemsCount = (foundResult.first['count'] as int?) ?? 0;
-        _lostItemsCount = (lostResult.first['count'] as int?) ?? 0;
+        _foundItemsCount = foundPosts.length;
+        _lostItemsCount = lostPosts.length;
         _loading = false;
       });
     } catch (e) {
@@ -54,18 +50,20 @@ class _StatsCardState extends State<StatsCard> {
       return const Center(child: CircularProgressIndicator());
     }
     
+    final l10n = AppLocalizations.of(context)!;
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _StatItem(
           icon: Icons.inventory_2_outlined,
           count: _foundItemsCount,
-          label: 'Items Found',
+          label: l10n.itemsFound,
         ),
         _StatItem(
           icon: Icons.search_outlined,
           count: _lostItemsCount,
-          label: 'Items Lost',
+          label: l10n.itemsLost,
         ),
       ],
     );

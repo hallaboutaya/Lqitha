@@ -12,21 +12,42 @@
 /// in the PaymentPopup dialog.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../cubits/found/found_cubit.dart';
+import '../../services/service_locator.dart';
+import '../../data/repositories/found_repository.dart';
+import '../../data/repositories/lost_repository.dart';
+import '../../data/repositories/user_repository.dart';
+import '../../cubits/lost/lost_cubit.dart';
 
 class ContactUnlockedPopup extends StatelessWidget {
   /// Name of the user whose contact was unlocked
   final String userName;
   
-  /// Phone number of the user (defaults to placeholder)
-  final String phoneNumber;
+  /// ID of the found post to delete when user clicks "Got it"
+  final dynamic postId;
+  
+  /// Type of post ('found' or 'lost')
+  final String postType;
 
-  const ContactUnlockedPopup({
+  ContactUnlockedPopup({
     super.key,
     required this.userName,
-    this.phoneNumber = '+213 555 123 456',
+    this.postId,
+    this.postType = 'found',
   });
+
+  void _deletePost() async {
+    try {
+      final foundRepository = getIt<FoundRepository>();
+      await foundRepository.deletePost(postId);
+      print('🗑️ ContactUnlockedPopup: Auto-deleted found post $postId');
+    } catch (e) {
+      print('❌ ContactUnlockedPopup: Failed to auto-delete post: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +56,9 @@ class ContactUnlockedPopup extends StatelessWidget {
       insetPadding: const EdgeInsets.all(20),
       child: Container(
         width: 360.59,
-        height: 647.05,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
           color: Colors.white.withOpacity(0.95),
@@ -76,34 +99,155 @@ class ContactUnlockedPopup extends StatelessWidget {
             // Content
             Padding(
               padding: const EdgeInsets.all(17.27),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  SizedBox(
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'Contact Information Unlocked! 🎉',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppColors.primaryPurple,
-                            fontSize: 18,
-                            fontFamily: 'Arimo',
-                            fontWeight: FontWeight.w700,
-                            height: 1.56,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Text(
-                            'You can now contact $userName to collect your item',
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Contact Information Unlocked! 🎉',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: AppColors.primaryPurple,
+                              fontSize: 18,
+                              fontFamily: 'Arimo',
+                              fontWeight: FontWeight.w700,
+                              height: 1.56,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Text(
+                              'You can now contact $userName to collect your item',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                                fontFamily: 'Arimo',
+                                fontWeight: FontWeight.w400,
+                                height: 1.43,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Success Icon
+                    Center(
+                      child: _buildSuccessIcon(),
+                    ),
+                    const SizedBox(height: 32),
+                    // Contact Information Card - Fetch phone number from database
+                    FutureBuilder<String?>(
+                      future: _fetchPhoneNumber(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Container(
+                            width: double.infinity,
+                            height: 150,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryPurple),
+                            ),
+                          );
+                        }
+                        
+                        if (snapshot.hasError) {
+                          print('❌ ContactUnlockedPopup: Snapshot error: ${snapshot.error}');
+                        }
+
+                        final phoneNumber = snapshot.data ?? 'Phone number not available';
+                        return _buildContactCard(phoneNumber);
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    // Info Box
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(13.26),
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 1.27,
+                            color: Color(0xFFE5E7EB),
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        'Please contact $userName to arrange pickup. Be respectful and confirm the item details before meeting.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.tagText.copyWith(
+                          color: AppColors.textTertiary,
+                          height: 1.62,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Got it Button
+                    InkWell(
+                      onTap: () async {
+                        // Delete post when user clicks Got it
+                        if (postId != null && postType == 'found') {
+                          _deletePost();
+                        }
+                        
+                        // We still try to refresh cubit if possible
+                        if (context.mounted) {
+                          try {
+                            if (postType == 'found') {
+                              final cubit = context.read<FoundCubit>();
+                              await cubit.refresh();
+                            } else {
+                              final cubit = context.read<LostCubit>();
+                              await cubit.refresh();
+                            }
+                          } catch (e) {
+                            print('Cubit not available in context: $e');
+                          }
+                        }
+                        
+                        // Close the popup
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 44,
+                        decoration: ShapeDecoration(
+                          color: AppColors.primaryPurple,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          shadows: const [
+                            BoxShadow(
+                              color: AppColors.shadowBlack,
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                              spreadRadius: -2,
+                            ),
+                            BoxShadow(
+                              color: AppColors.shadowBlack,
+                              blurRadius: 6,
+                              offset: Offset(0, 4),
+                              spreadRadius: -1,
+                            ),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Got it!',
+                            style: TextStyle(
+                              color: Colors.white,
                               fontSize: 14,
                               fontFamily: 'Arimo',
                               fontWeight: FontWeight.w400,
@@ -111,83 +255,9 @@ class ContactUnlockedPopup extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Success Icon
-                  Center(
-                    child: _buildSuccessIcon(),
-                  ),
-                  const SizedBox(height: 32),
-                  // Contact Information Card
-                  _buildContactCard(),
-                  const Spacer(),
-                  // Info Box
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(13.26),
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 1.27,
-                          color: Color(0xFFE5E7EB),
-                        ),
-                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Text(
-                      'Please contact $userName to arrange pickup. Be respectful and confirm the item details before meeting.',
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.tagText.copyWith(
-                        color: AppColors.textTertiary,
-                        height: 1.62,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Got it Button
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: double.infinity,
-                      height: 44,
-                      decoration: ShapeDecoration(
-                        color: AppColors.primaryPurple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        shadows: const [
-                          BoxShadow(
-                            color: AppColors.shadowBlack,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                            spreadRadius: -2,
-                          ),
-                          BoxShadow(
-                            color: AppColors.shadowBlack,
-                            blurRadius: 6,
-                            offset: Offset(0, 4),
-                            spreadRadius: -1,
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Got it!',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontFamily: 'Arimo',
-                            fontWeight: FontWeight.w400,
-                            height: 1.43,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
                   // Footer
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -230,11 +300,12 @@ class ContactUnlockedPopup extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSuccessIcon() {
     return Stack(
@@ -345,7 +416,73 @@ class ContactUnlockedPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard() {
+  /// Fetch phone number from database using postId
+  Future<String?> _fetchPhoneNumber() async {
+    if (postId == null) {
+      print('⚠️ ContactUnlockedPopup: postId is null');
+      return null;
+    }
+    
+    try {
+      print('🔍 ContactUnlockedPopup: Fetching contact for $postType post $postId');
+      
+      if (postType == 'found') {
+        final foundRepository = getIt<FoundRepository>();
+        final post = await foundRepository.getPostById(postId!);
+        
+        if (post == null) {
+          print('⚠️ ContactUnlockedPopup: Found post not found for ID $postId');
+          return null;
+        }
+        
+        if (post.userId == null) {
+          print('⚠️ ContactUnlockedPopup: post.userId is null for post $postId');
+          return null;
+        }
+        
+        final userRepository = getIt<UserRepository>();
+        final user = await userRepository.getUserById(post.userId!);
+        
+        if (user == null) {
+          print('⚠️ ContactUnlockedPopup: User not found for ID ${post.userId}');
+          return null;
+        }
+        
+        print('✅ ContactUnlockedPopup: Found phone number: ${user.phoneNumber}');
+        return user.phoneNumber;
+      } else {
+        final lostRepository = getIt<LostRepository>();
+        final post = await lostRepository.getPostById(postId!);
+        
+        if (post == null) {
+          print('⚠️ ContactUnlockedPopup: Lost post not found for ID $postId');
+          return null;
+        }
+        
+        if (post.userId == null) {
+          print('⚠️ ContactUnlockedPopup: post.userId is null for post $postId');
+          return null;
+        }
+        
+        final userRepository = getIt<UserRepository>();
+        final user = await userRepository.getUserById(post.userId!);
+        
+        if (user == null) {
+          print('⚠️ ContactUnlockedPopup: User not found for ID ${post.userId}');
+          return null;
+        }
+        
+        print('✅ ContactUnlockedPopup: Found phone number: ${user.phoneNumber}');
+        return user.phoneNumber;
+      }
+    } catch (e, stackTrace) {
+      print('❌ ContactUnlockedPopup: Error fetching phone number: $e');
+      print('📚 ContactUnlockedPopup: Stack trace: $stackTrace');
+      return null;
+    }
+  }
+
+  Widget _buildContactCard(String phoneNumber) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(17.27),

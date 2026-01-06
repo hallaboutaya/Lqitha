@@ -13,9 +13,15 @@
 /// After successful payment, automatically opens ContactUnlockedPopup.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../cubits/found/found_cubit.dart';
+import '../../core/constants/app_constants.dart';
 import 'popup_contact_unlocked.dart';
+import '../../cubits/lost/lost_cubit.dart';
+import '../../data/repositories/unlock_repository.dart';
+import '../../services/service_locator.dart';
 
 class PaymentPopup extends StatelessWidget {
   /// Name of the user whose contact will be unlocked
@@ -23,11 +29,19 @@ class PaymentPopup extends StatelessWidget {
   
   /// Title/description of the item being claimed
   final String itemTitle;
+  
+  /// ID of the post to unlock
+  final dynamic postId;
+  
+  /// Type of post ('found' or 'lost')
+  final String postType;
 
   const PaymentPopup({
     super.key,
     required this.userName,
     required this.itemTitle,
+    required this.postId,
+    this.postType = 'found',
   });
 
   @override
@@ -100,7 +114,7 @@ class PaymentPopup extends StatelessWidget {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'Pay to unlock contact details and collect your item',
+                          'Unlock contact details and collect your item',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColors.textSecondary,
@@ -159,10 +173,7 @@ class PaymentPopup extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 28),
-                  // Price Card
-                  _buildPriceCard(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   // Info Box
                   Container(
                     width: double.infinity,
@@ -226,12 +237,77 @@ class PaymentPopup extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: InkWell(
-                          onTap: () {
-                            Navigator.pop(context);
-                            showDialog(
-                              context: context,
-                              builder: (_) => ContactUnlockedPopup(userName: userName),
-                            );
+                          onTap: () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            final rootContext = context;
+                            
+                            // Capture the Cubit instances before any async gaps or popping
+                            FoundCubit? foundCubit;
+                            LostCubit? lostCubit;
+                            
+                            try {
+                              foundCubit = context.read<FoundCubit>();
+                            } catch (_) {}
+                            
+                            try {
+                              lostCubit = context.read<LostCubit>();
+                            } catch (_) {}
+
+                            try {
+                              // Perform actual unlock in database
+                              final unlockRepo = getIt<UnlockRepository>();
+                              await unlockRepo.createUnlock(
+                                postId.toString(),
+                                postType,
+                              );
+
+                              // Update local state in Cubit using captured instances
+                              if (postType == 'found' && foundCubit != null) {
+                                foundCubit.unlockPost(postId.toString());
+                              } else if (postType == 'lost' && lostCubit != null) {
+                                lostCubit.unlockPost(postId.toString());
+                              }
+
+                              // Close payment popup
+                              if (rootContext.mounted) {
+                                Navigator.pop(rootContext);
+                              }
+
+                              // Show contact unlocked popup
+                              if (rootContext.mounted) {
+                                showDialog(
+                                  context: rootContext,
+                                  builder: (dialogContext) {
+                                    final StateStreamableSource<Object?>? currentCubit = postType == 'found' ? foundCubit : lostCubit;
+                                    
+                                    Widget popup = ContactUnlockedPopup(
+                                      userName: userName,
+                                      postId: postId,
+                                      postType: postType,
+                                    );
+
+                                    // If we have a cubit, provide it to the popup
+                                    if (currentCubit != null) {
+                                      return BlocProvider.value(
+                                        value: currentCubit,
+                                        child: popup,
+                                      );
+                                    }
+                                    
+                                    return popup;
+                                  },
+                                );
+                              }
+                            } catch (e) {
+                              print('Error during unlock: $e');
+                              if (rootContext.mounted) {
+                                // If we already popped, we might need a different context for SnackBar
+                                // but rootContext should still work if we didn't leave the page
+                                messenger.showSnackBar(
+                                  SnackBar(content: Text('Failed to unlock: ${e.toString()}')),
+                                );
+                              }
+                            }
                           },
                           child: Container(
                             height: 44,
@@ -257,7 +333,7 @@ class PaymentPopup extends StatelessWidget {
                             ),
                             child: const Center(
                               child: Text(
-                                'Pay 200 DA',
+                                'Unlock Contact',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,
@@ -289,7 +365,7 @@ class PaymentPopup extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       const Text(
-                        'Secure payment powered by LQitha',
+                        'Secure unlock powered by LQitha',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: AppColors.textLight,
@@ -485,10 +561,10 @@ class PaymentPopup extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                '200',
+              Text(
+                '${AppConstants.contactUnlockCost}',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.primaryPurple,
                   fontSize: 48,
                   fontFamily: 'Arimo',

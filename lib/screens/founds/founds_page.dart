@@ -20,7 +20,6 @@ import '../../widgets/popups/popup_found_item.dart';
 import '../../theme/app_colors.dart';
 import '../../cubits/found/found_cubit.dart';
 import '../../cubits/found/found_state.dart';
-import '../../data/models/found_post.dart';
 import '../../services/service_locator.dart';
 import '../../data/repositories/user_repository.dart';
 
@@ -140,12 +139,18 @@ class _FoundsPageState extends State<FoundsPage> {
                               
                               return FutureBuilder<String?>(
                                 future: post.userId != null 
-                                    ? _userRepository.getUsernameById(post.userId!) 
+                                    ? _userRepository.getUsernameById(post.userId!).catchError((e) {
+                                        print('Error getting username: $e');
+                                        return null;
+                                      })
                                     : Future.value(null),
                                 builder: (context, snapshot) {
                                   final userName = snapshot.data ?? 'User ${post.userId ?? 'Unknown'}';
                                   
                                   return FoundItemCard(
+                                    key: ValueKey('found_${post.id}_${post.userId}'),
+                                    postId: post.id,
+                                    postOwnerId: post.userId,
                                     userName: userName,
                                     timeAgo: _formatTimeAgo(post.createdAt),
                                     description: post.description ?? '',

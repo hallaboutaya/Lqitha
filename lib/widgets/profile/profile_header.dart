@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 import '../../cubits/user_profile/user_profile_cubit.dart';
 import '../../cubits/user_profile/user_profile_state.dart';
-import '../../screens/profile/edit_profile_screen.dart';
+import '../../screens/settings/settings_page.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<UserProfileCubit, UserProfileState>(
       builder: (context, state) {
         final user = state.user;
@@ -20,12 +24,16 @@ class ProfileHeader extends StatelessWidget {
             Align(
               alignment: Alignment.topRight,
               child: IconButton(
-                icon: Icon(Icons.edit_outlined, color: Colors.grey[700]),
+                icon: Icon(Icons.settings_outlined, color: Colors.grey[700]),
                 onPressed: () {
+                  final cubit = context.read<UserProfileCubit>();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const EditProfileScreen(),
+                      builder: (context) => BlocProvider.value(
+                        value: cubit,
+                        child: const SettingsPage(),
+                      ),
                     ),
                   );
                 },
@@ -39,7 +47,7 @@ class ProfileHeader extends StatelessWidget {
                   const Icon(Icons.error_outline, color: Colors.red, size: 48),
                   const SizedBox(height: 8),
                   Text(
-                    'Error loading profile',
+                    '${l10n.error} loading profile',
                     style: const TextStyle(color: Colors.red),
                   ),
                   Text(
@@ -77,7 +85,7 @@ class ProfileHeader extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                user?.username ?? 'Loading...',
+                user?.username ?? '...',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(

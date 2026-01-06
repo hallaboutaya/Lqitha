@@ -3,7 +3,6 @@ import 'user_profile_state.dart';
 import 'dart:io';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../data/models/user.dart';
 import '../../data/repositories/user_repository.dart';
 
 

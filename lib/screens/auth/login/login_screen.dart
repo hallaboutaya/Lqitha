@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_text_styles.dart';
 import '../../../widgets/common/background_gradient.dart';
 import '../../../widgets/inputs/text_input.dart';
 import '../../../widgets/common/primary_button.dart';
-import '../../../services/auth_service.dart';
+import '../../../cubits/auth/auth_cubit.dart';
+import '../../../cubits/auth/auth_state.dart';
+import '../../../services/service_locator.dart';
 import '../../admin/admin_dashboard_screen.dart';
 import '../../main_navigation.dart';
 import '../signup/signup_screen.dart';
@@ -20,7 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isSubmitting = false;
   _LoginRole _role = _LoginRole.user;
 
   @override
@@ -30,114 +33,157 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _onSubmit() async {
+  void _onSubmit(BuildContext context) {
+    print('🔵 Login: Submit button pressed');
     final form = _formKey.currentState;
-    if (form == null) return;
-    if (!form.validate()) return;
-    setState(() => _isSubmitting = true);
-    try {
-      // TODO: Integrate real authentication
-      await Future.delayed(const Duration(milliseconds: 600));
-      
-      // Set user ID based on role
-      // User role: ID 1 (Sarah Johnson)
-      // Admin role: ID 5 (Admin User)
-      final int userId = _role == _LoginRole.admin ? 5 : 1;
-      final String role = _role == _LoginRole.admin ? 'admin' : 'user';
-      
-      // Login using AuthService
-      AuthService().login(userId: userId, role: role);
-      
-      if (!mounted) return;
-      final Widget destination = _role == _LoginRole.admin
+    if (form == null) {
+      print('❌ Login: Form key is null');
+      return;
+    }
+    
+    if (!form.validate()) {
+      print('❌ Login: Form validation failed');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fix the errors in the form'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    print('✅ Login: Form validated, calling AuthCubit.login');
+    print('📧 Email: ${_emailController.text.trim()}');
+    
+    // Trigger login via AuthCubit
+    context.read<AuthCubit>().login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+  }
+
+  void _handleAuthState(BuildContext context, AuthState state) {
+    print('🔄 Login: AuthState changed: ${state.runtimeType}');
+    
+    if (state is AuthError) {
+      print('❌ Login: Error state - ${state.message}');
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } else if (state is AuthAuthenticated) {
+      print('✅ Login: Authenticated - navigating to ${state.user.role == 'admin' ? 'admin' : 'main'}');
+      // Navigate based on user role
+      final Widget destination = state.user.role == 'admin'
           ? const AdminDashboardScreen()
           : const MainNavigation(initialIndex: 0);
+      
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => destination),
         (route) => false,
       );
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+    } else if (state is AuthLoading) {
+      print('⏳ Login: Loading state');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BackgroundGradient(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 392),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back',
-                      style: AppTextStyles.pageTitle.copyWith(
-                        color: _role == _LoginRole.admin ? AppColors.primaryOrange : AppColors.primaryPurple,
-                        fontSize: 32,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text('Sign in to continue to LQitha', style: AppTextStyles.subtitle.copyWith(color: AppColors.textSecondary)),
-                    const SizedBox(height: 16),
-                    _RoleToggle(
-                      role: _role,
-                      onChanged: (r) => setState(() => _role = r),
-                    ),
-                    const SizedBox(height: 24),
-                    Form(
-                      key: _formKey,
+    return BlocProvider(
+      create: (context) => getIt<AuthCubit>(),
+      child: BlocConsumer<AuthCubit, AuthState>(
+        listener: _handleAuthState,
+        builder: (context, state) {
+          final bool isLoading = state is AuthLoading;
+          
+          return Scaffold(
+            body: BackgroundGradient(
+              child: SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 392),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Email', style: AppTextStyles.subtitle.copyWith(fontSize: 14, color: const Color(0xFF0A0A0A))),
-                          const SizedBox(height: 8),
-                          AuthTextField(
-                            controller: _emailController,
-                            hintText: 'you@email.com',
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            validator: (v) {
-                              if (v == null || v.isEmpty) return 'Enter your email';
-                              final email = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                              return email.hasMatch(v) ? null : 'Enter a valid email';
-                            },
+                          Text(
+                            AppLocalizations.of(context)!.welcomeBack,
+                            style: AppTextStyles.pageTitle.copyWith(
+                              color: _role == _LoginRole.admin ? AppColors.primaryOrange : AppColors.primaryPurple,
+                              fontSize: 32,
+                            ),
                           ),
+                          const SizedBox(height: 6),
+                          Text(AppLocalizations.of(context)!.signInToContinue, style: AppTextStyles.subtitle.copyWith(color: AppColors.textSecondary)),
                           const SizedBox(height: 16),
-                          Text('Password', style: AppTextStyles.subtitle.copyWith(fontSize: 14, color: const Color(0xFF0A0A0A))),
-                          const SizedBox(height: 8),
-                          AuthTextField(
-                            controller: _passwordController,
-                            hintText: '••••••••',
-                            obscureText: true,
-                            textInputAction: TextInputAction.done,
-                            validator: (v) => (v == null || v.length < 6) ? 'Enter your password' : null,
+                          _RoleToggle(
+                            role: _role,
+                            onChanged: (r) => setState(() => _role = r),
                           ),
                           const SizedBox(height: 24),
-                          PrimaryButton(
-                            label: _role == _LoginRole.user ? 'Sign in as User' : 'Sign in as Admin',
-                            onPressed: _isSubmitting ? null : _onSubmit,
-                            backgroundColor: _role == _LoginRole.admin ? AppColors.primaryOrange : AppColors.primaryPurple,
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(AppLocalizations.of(context)!.email, style: AppTextStyles.subtitle.copyWith(fontSize: 14, color: const Color(0xFF0A0A0A))),
+                                const SizedBox(height: 8),
+                                AuthTextField(
+                                  controller: _emailController,
+                                  hintText: 'you@email.com',
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  validator: (v) {
+                                    final l10n = AppLocalizations.of(context)!;
+                                    if (v == null || v.isEmpty) return l10n.enterYourEmail;
+                                    final email = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                                    return email.hasMatch(v) ? null : l10n.enterValidEmail;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                Text(AppLocalizations.of(context)!.password, style: AppTextStyles.subtitle.copyWith(fontSize: 14, color: const Color(0xFF0A0A0A))),
+                                const SizedBox(height: 8),
+                                AuthTextField(
+                                  controller: _passwordController,
+                                  hintText: '••••••••',
+                                  obscureText: true,
+                                  textInputAction: TextInputAction.done,
+                                  validator: (v) => (v == null || v.length < 6) ? AppLocalizations.of(context)!.enterYourPassword : null,
+                                ),
+                                const SizedBox(height: 24),
+                                PrimaryButton(
+                                  label: isLoading 
+                                    ? 'Loading...' 
+                                    : (_role == _LoginRole.user ? AppLocalizations.of(context)!.signInAsUser : AppLocalizations.of(context)!.signInAsAdmin),
+                                  onPressed: isLoading ? null : () {
+                                    print('🔵 Button pressed!');
+                                    _onSubmit(context);
+                                  },
+                                  backgroundColor: _role == _LoginRole.admin ? AppColors.primaryOrange : AppColors.primaryPurple,
+                                ),
+                                const SizedBox(height: 16),
+                                _NoAccount(onTapSignup: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const SignupScreen()),
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          _NoAccount(onTapSignup: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const SignupScreen()),
-                            );
-                          }),
                         ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -173,7 +219,7 @@ class _RoleToggle extends StatelessWidget {
         children: [
           Expanded(
             child: _Segment(
-              label: 'User',
+              label: AppLocalizations.of(context)!.user,
               active: role == _LoginRole.user,
               activeColor: AppColors.primaryPurple,
               icon: Icons.person_outline,
@@ -183,7 +229,7 @@ class _RoleToggle extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: _Segment(
-              label: 'Admin',
+              label: AppLocalizations.of(context)!.admin,
               active: role == _LoginRole.admin,
               activeColor: AppColors.primaryOrange,
               icon: Icons.admin_panel_settings_outlined,
@@ -258,11 +304,11 @@ class _NoAccount extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Don't have an account?", style: AppTextStyles.subtitle.copyWith(color: AppColors.textSecondary)),
+        Text(AppLocalizations.of(context)!.dontHaveAccount, style: AppTextStyles.subtitle.copyWith(color: AppColors.textSecondary)),
         const SizedBox(width: 6),
         GestureDetector(
           onTap: onTapSignup,
-          child: Text('Sign up', style: AppTextStyles.subtitle.copyWith(color: AppColors.primaryPurple)),
+          child: Text(AppLocalizations.of(context)!.signUp, style: AppTextStyles.subtitle.copyWith(color: AppColors.primaryPurple)),
         ),
       ],
     );

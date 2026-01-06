@@ -9,21 +9,29 @@ class DatabaseSeeder {
   /// Seed the database with test data.
   /// 
   /// This will:
-  /// 1. Create test users (regular users and an admin)
-  /// 2. Create found posts (some pending, some approved)
-  /// 3. Create lost posts (some pending, some approved)
-  /// 4. Create notifications for users
+  /// 1. Check if database already has data
+  /// 2. If empty, create test users, posts, and notifications
+  /// 3. If not empty, skip seeding to preserve user data
   /// 
-  /// Returns true if seeding was successful, false otherwise.
+  /// Returns true if seeding was successful or skipped, false on error.
   static Future<bool> seedDatabase() async {
     try {
       final db = await DBHelper.getDatabase();
       
+      // Check if database already has users
+      final userCount = Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM users')
+      ) ?? 0;
+      
+      if (userCount > 0) {
+        print('📊 Database already has $userCount users, skipping seed');
+        return true;
+      }
+      
+      print('🌱 Database is empty, seeding with test data...');
+      
       // Start a transaction for atomicity
       await db.transaction((txn) async {
-        // Clear existing data (optional - comment out if you want to keep existing data)
-        await _clearTables(txn);
-        
         // 1. Insert Users
         final users = await _insertUsers(txn);
         
@@ -43,15 +51,6 @@ class DatabaseSeeder {
       print('❌ Error seeding database: $e');
       return false;
     }
-  }
-  
-  /// Clear all tables (optional - for fresh start)
-  static Future<void> _clearTables(Transaction txn) async {
-    await txn.delete('notifications');
-    await txn.delete('found_posts');
-    await txn.delete('lost_posts');
-    await txn.delete('users');
-    print('🗑️  Cleared existing data');
   }
   
   /// Insert test users

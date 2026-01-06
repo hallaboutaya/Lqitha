@@ -78,6 +78,42 @@ class LostRepository {
     }
   }
 
+  /// Fetch all lost posts for a specific user.
+  /// 
+  /// Optionally filter by status (e.g., 'approved', 'pending', 'rejected').
+  /// 
+  /// [userId] - The id of the user
+  /// [status] - Optional status filter
+  /// 
+  /// Returns a list of [LostPost] objects.
+  Future<List<LostPost>> getPostsByUserId(dynamic userId, {String? status}) async {
+    try {
+      final db = await _db;
+      
+      String whereClause = 'user_id = ?';
+      List<dynamic> whereArgs = [userId];
+      
+      if (status != null) {
+        whereClause += ' AND status = ?';
+        whereArgs.add(status);
+      }
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'lost_posts',
+        where: whereClause,
+        whereArgs: whereArgs,
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return LostPost.fromMap(maps[i]);
+      });
+    } catch (e) {
+      print('Error fetching posts by user id: $e');
+      rethrow;
+    }
+  }
+
   /// Insert a new lost post into the database.
   /// 
   /// The post will be created with status='pending' (default in database schema).
@@ -87,7 +123,7 @@ class LostRepository {
   /// [post] - The LostPost object to insert (id should be null)
   /// 
   /// Returns the id of the newly inserted post.
-  Future<int> insertPost(LostPost post) async {
+  Future<dynamic> insertPost(LostPost post) async {
     try {
       final db = await _db;
       
@@ -147,7 +183,7 @@ class LostRepository {
   /// [id] - The id of the post to fetch
   /// 
   /// Returns a [LostPost] object or null if not found.
-  Future<LostPost?> getPostById(int id) async {
+  Future<LostPost?> getPostById(dynamic id) async {
     try {
       final db = await _db;
       
@@ -177,7 +213,7 @@ class LostRepository {
   /// [userId] - The id of the user
   /// 
   /// Returns a list of [LostPost] objects for that user.
-  Future<List<LostPost>> getPostsByUser(int userId) async {
+  Future<List<LostPost>> getPostsByUser(dynamic userId) async {
     try {
       final db = await _db;
       
@@ -228,7 +264,7 @@ class LostRepository {
   /// [status] - The new status ('approved' or 'rejected')
   /// 
   /// Returns the number of rows affected (should be 1 on success).
-  Future<int> updatePostStatus(int postId, String status) async {
+  Future<int> updatePostStatus(dynamic postId, String status) async {
     try {
       final db = await _db;
       
@@ -273,7 +309,7 @@ class LostRepository {
   /// [postId] - The id of the post to delete
   /// 
   /// Returns the number of rows affected (should be 1 on success).
-  Future<int> deletePost(int postId) async {
+  Future<int> deletePost(dynamic postId) async {
     try {
       final db = await _db;
       

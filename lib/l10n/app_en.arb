@@ -181,6 +181,243 @@
         "type": "String"
       }
     }
-  }
+  },
+  "welcomeToLqitha": "Welcome to Lqitha",
+  "@welcomeToLqitha": {
+    "description": "Welcome message on auth landing screen"
+  },
+  "findAndReportLostItems": "Find and report lost items with the community",
+  "@findAndReportLostItems": {
+    "description": "Subtitle on auth landing screen"
+  },
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Button label to create account"
+  },
+  "signIn": "Sign in",
+  "@signIn": {
+    "description": "Button label to sign in"
+  },
+  "welcomeBack": "Welcome back",
+  "@welcomeBack": {
+    "description": "Welcome message on login screen"
+  },
+  "signInToContinue": "Sign in to continue to LQitha",
+  "@signInToContinue": {
+    "description": "Subtitle on login screen"
+  },
+  "user": "User",
+  "@user": {
+    "description": "User role label"
+  },
+  "admin": "Admin",
+  "@admin": {
+    "description": "Admin role label"
+  },
+  "signInAsUser": "Sign in as User",
+  "@signInAsUser": {
+    "description": "Button label to sign in as user"
+  },
+  "signInAsAdmin": "Sign in as Admin",
+  "@signInAsAdmin": {
+    "description": "Button label to sign in as admin"
+  },
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount": {
+    "description": "Text before sign up link on login screen"
+  },
+  "signUp": "Sign up",
+  "@signUp": {
+    "description": "Link to sign up page"
+  },
+  "email": "Email",
+  "@email": {
+    "description": "Label for email field"
+  },
+  "enterYourEmail": "Enter your email",
+  "@enterYourEmail": {
+    "description": "Validation message for empty email"
+  },
+  "enterValidEmail": "Enter a valid email",
+  "@enterValidEmail": {
+    "description": "Validation message for invalid email"
+  },
+  "password": "Password",
+  "@password": {
+    "description": "Label for password field"
+  },
+  "enterYourPassword": "Enter your password",
+  "@enterYourPassword": {
+    "description": "Validation message for empty password"
+  },
+  "fullName": "Full Name",
+  "@fullName": {
+    "description": "Label for full name field"
+  },
+  "enterFullName": "Enter your full name",
+  "@enterFullName": {
+    "description": "Validation message for full name"
+  },
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": {
+    "description": "Label for phone number field"
+  },
+  "enterPhoneNumber": "Enter your phone number",
+  "@enterPhoneNumber": {
+    "description": "Validation message for empty phone number"
+  },
+  "enterValidPhoneNumber": "Enter a valid phone number",
+  "@enterValidPhoneNumber": {
+    "description": "Validation message for invalid phone number"
+  },
+  "useAtLeast6Characters": "Use at least 6 characters",
+  "@useAtLeast6Characters": {
+    "description": "Validation message for password length"
+  },
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Text before sign in link on signup screen"
+  },
+  "lqithaAdmin": "Lqitha Admin",
+  "@lqithaAdmin": {
+    "description": "Title on admin dashboard"
+  },
+  "managePostsAndActivity": "Manage posts and platform activity",
+  "@managePostsAndActivity": {
+    "description": "Subtitle on admin dashboard"
+  },
+  "adminPanel": "Admin Panel",
+  "@adminPanel": {
+    "description": "Button label for admin panel"
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Button label to logout"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error label prefix"
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button label to retry"
+  },
+  "totalPosts": "Total Posts",
+  "@totalPosts": {
+    "description": "Stat card title for total posts"
+  },
+  "pendingReview": "Pending Review",
+  "@pendingReview": {
+    "description": "Stat card title for pending posts"
+  },
+  "approvedToday": "Approved Today",
+  "@approvedToday": {
+    "description": "Stat card title for approved posts today"
+  },
+  "activeUsers": "Active Users",
+  "@activeUsers": {
+    "description": "Stat card title for active users"
+  },
+  "searchPosts": "Search posts...",
+  "@searchPosts": {
+    "description": "Placeholder for search field in admin dashboard"
+  },
+  "noPostsToReview": "No posts to review",
+  "@noPostsToReview": {
+    "description": "Message when there are no posts to review"
+  },
+  "postApprovedSuccessfully": "Post approved successfully",
+  "@postApprovedSuccessfully": {
+    "description": "Success message when post is approved"
+  },
+  "postRejected": "Post rejected",
+  "@postRejected": {
+    "description": "Success message when post is rejected"
+  },
+  "approve": "Approve",
+  "@approve": {
+    "description": "Button label to approve post"
+  },
+  "reject": "Reject",
+  "@reject": {
+    "description": "Button label to reject post"
+  },
+  "postApproved": "Post Approved",
+  "@postApproved": {
+    "description": "Notification title when admin approves a post"
+  },
+  "adminApprovedYourPost": "Admin approved your {postType} post and it is now visible to users.",
+  "@adminApprovedYourPost": {
+    "description": "Notification message when admin approves a post",
+    "placeholders": {
+      "postType": {
+        "type": "String"
+      }
+    }
+  },
+  "postRejected": "Post Rejected",
+  "@postRejected": {
+    "description": "Notification title when admin rejects a post"
+  },
+  "adminRejectedYourPost": "Admin rejected your {postType} post.",
+  "@adminRejectedYourPost": {
+    "description": "Notification message when admin rejects a post",
+    "placeholders": {
+      "postType": {
+        "type": "String"
+      }
+    }
+  },
+  "settings": "Settings",
+  "profileAndSecurity": "Profile & Security",
+  "editProfile": "Edit Profile",
+  "changePassword": "Change Password",
+  "appSettings": "App Settings",
+  "language": "Language",
+  "support": "Support",
+  "helpCenter": "Help Center",
+  "aboutLqitha": "About Lqitha",
+  "chooseLanguage": "Choose Language",
+  "notifications": "Notifications",
+  "manageAlerts": "Manage your alerts",
+  "oldPassword": "Old Password",
+  "newPassword": "New Password",
+  "confirmNewPassword": "Confirm New Password",
+  "updatePassword": "Update Password",
+  "setSecurePassword": "Set a secure password to protect your account",
+  "min8Characters": "Min 8 characters",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "enterOldPassword": "Enter old password",
+  "enterNewPassword": "Enter new password",
+  "passwordChangedSuccessfully": "Password changed successfully!",
+  "emailAddress": "Email Address",
+  "saveChanges": "Save Changes",
+  "nameCannotBeEmpty": "Name cannot be empty",
+  "profilePictureUpdated": "Profile picture updated!",
+  "profileUpdatedSuccessfully": "Profile updated successfully!",
+  "totalPoints": "Total Points",
+  "active": "Active",
+  "keepHelpingOthers": "Keep helping others to earn more!",
+  "reclaimMyPoints": "Reclaim My Points",
+  "itemsFound": "Items Found",
+  "itemsLost": "Items Lost",
+  "recentActivity": "Recent Activity",
+  "notLoggedIn": "Not logged in",
+  "noRecentActivity": "No recent activity",
+  "createPostToEarnPoints": "Create a post to earn points!",
+  "myPosts": "My Posts",
+  "validated": "Validated",
+  "onHold": "On Hold",
+  "rejected": "Rejected",
+  "waitingForAdminApproval": "Waiting for admin approval",
+  "postWasRejectedByAdmin": "Post was rejected by admin",
+  "noPostsInCategory": "No posts in this category",
+  "found": "Found",
+  "lost": "Lost",
+  "fullName": "Full Name",
+  "enterFullName": "Enter your full name",
+  "enterYourEmail": "Enter your email",
+  "enterPhoneNumber": "Enter your phone number",
+  "phoneNumber": "Phone Number"
 }
 

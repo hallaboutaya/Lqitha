@@ -16,6 +16,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../services/auth_service.dart';
@@ -23,19 +25,20 @@ import '../../services/service_locator.dart';
 import '../../data/repositories/lost_repository.dart';
 import '../../data/repositories/found_repository.dart';
 import '../../data/repositories/notification_repository.dart';
-import '../../data/repositories/user_repository.dart';
-import '../../data/models/lost_post.dart';
 import '../../data/models/found_post.dart';
 import '../../data/models/notification.dart';
 import '../../cubits/lost/lost_cubit.dart';
+import '../../cubits/lost/lost_state.dart';
 import '../../cubits/found/found_cubit.dart';
+import '../popups/popup_payment.dart';
+import '../popups/popup_contact_unlocked.dart';
 
 class LostItemCard extends StatelessWidget {
   /// ID of the lost post
-  final int postId;
+  final dynamic postId;
   
   /// ID of the user who posted this lost item
-  final int postOwnerId;
+  final dynamic postOwnerId;
   
   /// Name of the user who lost the item
   final String userName;
@@ -81,7 +84,13 @@ class LostItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final currentUserId = AuthService().currentUserId;
+
+    return BlocBuilder<LostCubit, LostState>(
+      builder: (context, state) {
+        final isUnlocked = state is LostLoaded && (state.isUnlocked(postId.toString()) || postOwnerId == currentUserId);
+
+        return Container(
       margin: const EdgeInsets.only(bottom: 16),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
@@ -130,15 +139,20 @@ class LostItemCard extends StatelessWidget {
                           )
                         ],
                       ),
-                      child: Image.network(
-                        imageUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.person),
-                          );
-                        },
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            color: Colors.white,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.person),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -148,7 +162,7 @@ class LostItemCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userName,
+                            isUnlocked ? userName : 'Lqitha User',
                             style: AppTextStyles.cardUserName,
                           ),
                           Text(
@@ -178,20 +192,41 @@ class LostItemCard extends StatelessWidget {
                             height: 1.33,
                           ),
                         ),
-                      )
-                    else
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: ShapeDecoration(
-                          color: borderColor == AppColors.primaryOrange
-                              ? AppColors.primaryPurple.withOpacity(0.15)
-                              : AppColors.primaryOrange.withOpacity(0.15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
+                      ),
+                    // Status indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: ShapeDecoration(
+                        color: isUnlocked 
+                          ? Colors.green.withOpacity(0.15)
+                          : borderColor.withOpacity(0.15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: isUnlocked ? Colors.green : borderColor,
+                            width: 1,
                           ),
                         ),
                       ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isUnlocked ? Icons.lock_open : Icons.lock_outline,
+                            size: 14,
+                            color: isUnlocked ? Colors.green : borderColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isUnlocked ? 'Unlocked' : 'Locked',
+                            style: TextStyle(
+                              color: isUnlocked ? Colors.green : borderColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -207,19 +242,26 @@ class LostItemCard extends StatelessWidget {
                   ),
                   child: Stack(
                     children: [
-                      Image.network(
-                        imageUrl,
+                      CachedNetworkImage(
+                        imageUrl: imageUrl,
                         width: double.infinity,
                         height: 256,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Center(
-                              child: Icon(Icons.image, size: 64),
-                            ),
-                          );
-                        },
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: double.infinity,
+                            height: 256,
+                            color: Colors.white,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(Icons.broken_image, size: 64),
+                          ),
+                        ),
                       ),
                       // Gradient overlay at bottom
                       Positioned(
@@ -326,16 +368,50 @@ class LostItemCard extends StatelessWidget {
                   }).toList(),
                 ),
                 const SizedBox(height: 12),
-                // LQitou Button (Orange)
+                // LQitou Button
                 InkWell(
                   onTap: () {
-                    _showFoundItemConfirmation(context);
+                    final lostCubit = context.read<LostCubit>();
+                    
+                    if (isUnlocked) {
+                      // Already unlocked, show contact info directly
+                      // Reuse ContactUnlockedPopup since it just shows user info
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: context.read<LostCubit>(),
+                          child: ContactUnlockedPopup(
+                            userName: userName,
+                            postId: postId,
+                            postType: 'lost',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // For lost posts, the "LQitou" flow usually means the finder is reporting it.
+                    // But if it's already "found" by someone else, we might want to "Pay" to see contact.
+                    // Actually, the user's rule says: "When user taps 'LQITHA / LQITOU': Simulate payment success"
+                    
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) => BlocProvider.value(
+                        value: lostCubit,
+                        child: PaymentPopup(
+                          userName: userName,
+                          itemTitle: description,
+                          postId: postId,
+                          postType: 'lost',
+                        ),
+                      ),
+                    );
                   },
                   child: Container(
                     width: double.infinity,
                     height: 48,
                     decoration: ShapeDecoration(
-                      color: AppColors.primaryOrange,
+                      color: isUnlocked ? Colors.green : AppColors.primaryOrange,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -356,7 +432,7 @@ class LostItemCard extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        AppLocalizations.of(context)!.lqitou,
+                        isUnlocked ? 'View Contact' : AppLocalizations.of(context)!.lqitou,
                         style: AppTextStyles.buttonText,
                       ),
                     ),
@@ -367,6 +443,8 @@ class LostItemCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+      },
     );
   }
   
@@ -433,7 +511,6 @@ class LostItemCard extends StatelessWidget {
       final lostRepository = getIt<LostRepository>();
       final foundRepository = getIt<FoundRepository>();
       final notificationRepository = getIt<NotificationRepository>();
-      final userRepository = getIt<UserRepository>();
       
       // 1. Get the lost post data
       final lostPost = await lostRepository.getPostById(postId);
@@ -457,6 +534,9 @@ class LostItemCard extends StatelessWidget {
       await lostRepository.deletePost(postId);
       
       // 5. Create notification for the original owner
+      print('🔔 Creating notification for user ID: $postOwnerId');
+      print('🔔 Notification message: ${l10n.goodNewsSomeoneFound(description)}');
+      
       final notification = NotificationModel(
         title: l10n.someoneFoundYourItem,
         message: l10n.goodNewsSomeoneFound(description),
@@ -466,7 +546,9 @@ class LostItemCard extends StatelessWidget {
         createdAt: DateTime.now().toIso8601String(),
         userId: postOwnerId,
       );
-      await notificationRepository.insertNotification(notification);
+      
+      final notificationId = await notificationRepository.insertNotification(notification);
+      print('🔔 Notification created with ID: $notificationId for user: $postOwnerId');
       
       // 6. Refresh both Lost and Found cubits to update UI
       if (context.mounted) {

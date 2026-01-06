@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1036761151848",
+    "project_id": "lqitha-app",
+    "storage_bucket": "lqitha-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1036761151848:android:f9c5b061a0ca6ac686bedd",
+        "android_client_info": {
+          "package_name": "lqitha.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnTV9xouHLSkdH3Y7nAFKKUsHYorEaJ2o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

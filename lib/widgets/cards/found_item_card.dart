@@ -13,12 +13,25 @@
 /// Styled with purple theme to match Figma design.
 library;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../cubits/found/found_cubit.dart';
+import '../../cubits/found/found_state.dart';
+import '../../services/auth_service.dart';
 import '../popups/popup_payment.dart';
+import '../popups/popup_contact_unlocked.dart';
 
 class FoundItemCard extends StatelessWidget {
+  /// ID of the found post
+  final dynamic postId;
+  
+  /// ID of the user who found the item
+  final dynamic postOwnerId;
+  
   /// Name of the user who found the item
   final String userName;
   
@@ -42,6 +55,8 @@ class FoundItemCard extends StatelessWidget {
 
   const FoundItemCard({
     super.key,
+    required this.postId,
+    required this.postOwnerId,
     required this.userName,
     required this.timeAgo,
     required this.description,
@@ -53,7 +68,13 @@ class FoundItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final currentUserId = AuthService().currentUserId;
+    
+    return BlocBuilder<FoundCubit, FoundState>(
+      builder: (context, state) {
+        final isUnlocked = state is FoundLoaded && (state.isUnlocked(postId.toString()) || postOwnerId == currentUserId);
+
+        return Container(
       margin: const EdgeInsets.only(bottom: 16),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
@@ -102,15 +123,20 @@ class FoundItemCard extends StatelessWidget {
                           )
                         ],
                       ),
-                      child: Image.network(
-                        imageUrl,
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.person),
-                          );
-                        },
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            color: Colors.white,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.person),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -120,7 +146,7 @@ class FoundItemCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userName,
+                            isUnlocked ? userName : 'Lqitha User',
                             style: AppTextStyles.cardUserName,
                           ),
                           Text(
@@ -132,15 +158,36 @@ class FoundItemCard extends StatelessWidget {
                     ),
                     // Status indicator
                     Container(
-                      width: 32,
-                      height: 32,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: ShapeDecoration(
-                        color: borderColor == AppColors.primaryPurple
-                            ? AppColors.primaryOrange.withOpacity(0.15)
-                            : AppColors.primaryPurple.withOpacity(0.15),
+                        color: isUnlocked 
+                          ? Colors.green.withOpacity(0.15)
+                          : borderColor.withOpacity(0.15),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: isUnlocked ? Colors.green : borderColor,
+                            width: 1,
+                          ),
                         ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isUnlocked ? Icons.lock_open : Icons.lock_outline,
+                            size: 14,
+                            color: isUnlocked ? Colors.green : borderColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isUnlocked ? 'Unlocked' : 'Locked',
+                            style: TextStyle(
+                              color: isUnlocked ? Colors.green : borderColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -158,19 +205,26 @@ class FoundItemCard extends StatelessWidget {
                   ),
                   child: Stack(
                     children: [
-                      Image.network(
-                        imageUrl,
+                      CachedNetworkImage(
+                        imageUrl: imageUrl,
                         width: double.infinity,
                         height: 256,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Center(
-                              child: Icon(Icons.image, size: 64),
-                            ),
-                          );
-                        },
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: double.infinity,
+                            height: 256,
+                            color: Colors.white,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(Icons.broken_image, size: 64),
+                          ),
+                        ),
                       ),
                       // Gradient overlay at bottom
                       Positioned(
@@ -278,11 +332,33 @@ class FoundItemCard extends StatelessWidget {
                 // LQitha Button
                 InkWell(
                   onTap: () {
+                    final foundCubit = context.read<FoundCubit>();
+                    
+                    if (isUnlocked) {
+                      // Already unlocked, show contact info directly
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: foundCubit,
+                          child: ContactUnlockedPopup(
+                            userName: userName,
+                            postId: postId,
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
                     showDialog(
                       context: context,
-                      builder: (_) => PaymentPopup(
-                        userName: userName,
-                        itemTitle: description,
+                      builder: (dialogContext) => BlocProvider.value(
+                        value: foundCubit,
+                        child: PaymentPopup(
+                          userName: userName,
+                          itemTitle: description,
+                          postId: postId,
+                          postType: 'found',
+                        ),
                       ),
                     );
                   },
@@ -290,7 +366,7 @@ class FoundItemCard extends StatelessWidget {
                     width: double.infinity,
                     height: 48,
                     decoration: ShapeDecoration(
-                      color: AppColors.primaryPurple,
+                      color: isUnlocked ? Colors.green : AppColors.primaryPurple,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -311,7 +387,7 @@ class FoundItemCard extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        AppLocalizations.of(context)!.lqitha,
+                        isUnlocked ? 'View Contact' : AppLocalizations.of(context)!.lqitha,
                         style: AppTextStyles.buttonText,
                       ),
                     ),
@@ -322,6 +398,8 @@ class FoundItemCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

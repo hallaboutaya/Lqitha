@@ -26,11 +26,30 @@ class LostLoaded extends LostState {
 
   /// Optional message to display (e.g., "No posts found" or success messages)
   final String? message;
+  
+  /// IDs of posts that have been unlocked by the current user
+  final Set<String> unlockedPostIds;
 
   LostLoaded({
     required this.posts,
     this.message,
+    this.unlockedPostIds = const {},
   });
+  
+  /// Helper to check if a post is unlocked
+  bool isUnlocked(String postId) => unlockedPostIds.contains(postId);
+  
+  LostLoaded copyWith({
+    List<LostPost>? posts,
+    String? message,
+    Set<String>? unlockedPostIds,
+  }) {
+    return LostLoaded(
+      posts: posts ?? this.posts,
+      message: message ?? this.message,
+      unlockedPostIds: unlockedPostIds ?? this.unlockedPostIds,
+    );
+  }
 }
 
 /// Error state when something goes wrong.

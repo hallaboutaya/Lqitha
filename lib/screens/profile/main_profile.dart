@@ -18,20 +18,15 @@ class MainProfilePage extends StatefulWidget {
 }
 
 class _MainProfilePageState extends State<MainProfilePage> {
-  late final UserProfileCubit _userProfileCubit;
-  late final int _userId;
+  late UserProfileCubit _userProfileCubit;
+  late dynamic _userId; // Can be int (SQLite) or String (UUID from Supabase)
 
   @override
   void initState() {
     super.initState();
-    // Get current user ID from AuthService
-    // If not logged in, default to user ID 1 (Sarah Johnson)
-    _userId = AuthService().currentUserId ?? 1;
+    // Get current logged-in user ID from AuthService
+    _userId = AuthService().currentUserId ?? 1; // Fallback to 1 if not logged in
     
-    print('👤 MainProfilePage: Initializing with userId=$_userId');
-    print('🔐 AuthService: currentUserId=${AuthService().currentUserId}, role=${AuthService().currentUserRole}');
-    
-    // Create cubit with the logged-in user ID
     _userProfileCubit = getIt<UserProfileCubit>(param1: _userId.toString());
     _userProfileCubit.loadProfile();
   }
@@ -58,7 +53,7 @@ class _MainProfilePageState extends State<MainProfilePage> {
                 const PointsCard(),
                 StatsCard(userId: _userId),
                 const SizedBox(height: 20),
-                const RecentActivity(),
+                RecentActivity(),  // Removed const to allow reinitialization
                 const SizedBox(height: 20),
                 MyPostsTabs(userId: _userId),
                 const SizedBox(height: 20),

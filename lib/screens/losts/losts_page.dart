@@ -167,14 +167,18 @@ class _LostsPageState extends State<LostsPage> {
                               
                               return FutureBuilder<String?>(
                                 future: post.userId != null 
-                                    ? _userRepository.getUsernameById(post.userId!) 
+                                    ? _userRepository.getUsernameById(post.userId!).catchError((e) {
+                                        print('Error getting username: $e');
+                                        return null;
+                                      })
                                     : Future.value(null),
                                 builder: (context, snapshot) {
                                   final userName = snapshot.data ?? 'User ${post.userId ?? 'Unknown'}';
                                   
                                   return LostItemCard(
-                                    postId: post.id!,
-                                    postOwnerId: post.userId!,
+                                    key: ValueKey('lost_${post.id}_${post.userId}'),
+                                    postId: post.id,
+                                    postOwnerId: post.userId,
                                     userName: userName,
                                     timeAgo: _formatTimeAgo(post.createdAt),
                                     description: post.description ?? '',

@@ -1,5 +1,6 @@
 library;
 import 'package:flutter/material.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/common/background_gradient.dart';
@@ -25,19 +26,19 @@ class AuthLandingScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Welcome to Lqitha',
+                      AppLocalizations.of(context)!.welcomeToLqitha,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.pageTitle.copyWith(color: AppColors.primaryPurple),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Find and report lost items with the community',
+                      AppLocalizations.of(context)!.findAndReportLostItems,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.subtitle.copyWith(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 32),
                     PrimaryButton(
-                      label: 'Create Account',
+                      label: AppLocalizations.of(context)!.createAccount,
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const SignupScreen()),
@@ -58,7 +59,7 @@ class AuthLandingScreen extends StatelessWidget {
                         foregroundColor: AppColors.primaryPurple,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Sign in'),
+                      child: Text(AppLocalizations.of(context)!.signIn),
                     ),
                   ],
                 ),

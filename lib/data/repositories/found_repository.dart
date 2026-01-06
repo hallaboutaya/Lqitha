@@ -1,6 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 import '../databases/db_helper.dart';
 import '../models/found_post.dart';
+import '../../core/models/paginated_result.dart';
+import '../../core/constants/app_constants.dart';
+import '../../core/logging/app_logger.dart';
 
 /// Repository for Found Posts database operations.
 /// 
@@ -35,9 +38,59 @@ class FoundRepository {
       return List.generate(maps.length, (i) {
         return FoundPost.fromMap(maps[i]);
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Log error and rethrow for cubit to handle
-      print('Error fetching approved found posts: $e');
+      AppLogger.e('Error fetching approved found posts', e, stackTrace);
+      rethrow;
+    }
+  }
+  
+  /// Fetch approved found posts with pagination
+  /// 
+  /// [page] - Page number (1-indexed)
+  /// [pageSize] - Number of items per page
+  /// 
+  /// Returns a [PaginatedResult] with posts and pagination metadata
+  Future<PaginatedResult<FoundPost>> getApprovedPostsPaginated({
+    int page = 1,
+    int pageSize = AppConstants.defaultPageSize,
+  }) async {
+    try {
+      final db = await _db;
+      
+      // Get total count
+      final countResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM found_posts WHERE status = ?',
+        ['approved'],
+      );
+      final total = countResult.first['count'] as int;
+      
+      // Calculate offset
+      final offset = (page - 1) * pageSize;
+      
+      // Query with pagination
+      final List<Map<String, dynamic>> maps = await db.query(
+        'found_posts',
+        where: 'status = ?',
+        whereArgs: ['approved'],
+        orderBy: 'created_at DESC',
+        limit: pageSize,
+        offset: offset,
+      );
+      
+      // Convert to FoundPost objects
+      final items = List.generate(maps.length, (i) {
+        return FoundPost.fromMap(maps[i]);
+      });
+      
+      return PaginatedResult<FoundPost>(
+        items: items,
+        total: total,
+        page: page,
+        pageSize: pageSize,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.e('Error fetching paginated found posts', e, stackTrace);
       rethrow;
     }
   }
@@ -78,6 +131,42 @@ class FoundRepository {
     }
   }
 
+  /// Fetch all found posts for a specific user.
+  /// 
+  /// Optionally filter by status (e.g., 'approved', 'pending', 'rejected').
+  /// 
+  /// [userId] - The id of the user
+  /// [status] - Optional status filter
+  /// 
+  /// Returns a list of [FoundPost] objects.
+  Future<List<FoundPost>> getPostsByUserId(dynamic userId, {String? status}) async {
+    try {
+      final db = await _db;
+      
+      String whereClause = 'user_id = ?';
+      List<dynamic> whereArgs = [userId];
+      
+      if (status != null) {
+        whereClause += ' AND status = ?';
+        whereArgs.add(status);
+      }
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'found_posts',
+        where: whereClause,
+        whereArgs: whereArgs,
+        orderBy: 'created_at DESC',
+      );
+
+      return List.generate(maps.length, (i) {
+        return FoundPost.fromMap(maps[i]);
+      });
+    } catch (e) {
+      print('Error fetching posts by user id: $e');
+      rethrow;
+    }
+  }
+
   /// Insert a new found post into the database.
   /// 
   /// The post will be created with status='pending' (default in database schema).
@@ -87,7 +176,7 @@ class FoundRepository {
   /// [post] - The FoundPost object to insert (id should be null)
   /// 
   /// Returns the id of the newly inserted post.
-  Future<int> insertPost(FoundPost post) async {
+  Future<dynamic> insertPost(FoundPost post) async {
     try {
       final db = await _db;
       
@@ -147,7 +236,7 @@ class FoundRepository {
   /// [id] - The id of the post to fetch
   /// 
   /// Returns a [FoundPost] object or null if not found.
-  Future<FoundPost?> getPostById(int id) async {
+  Future<FoundPost?> getPostById(dynamic id) async {
     try {
       final db = await _db;
       
@@ -177,7 +266,7 @@ class FoundRepository {
   /// [userId] - The id of the user
   /// 
   /// Returns a list of [FoundPost] objects for that user.
-  Future<List<FoundPost>> getPostsByUser(int userId) async {
+  Future<List<FoundPost>> getPostsByUser(dynamic userId) async {
     try {
       final db = await _db;
       
@@ -228,7 +317,7 @@ class FoundRepository {
   /// [status] - The new status ('approved' or 'rejected')
   /// 
   /// Returns the number of rows affected (should be 1 on success).
-  Future<int> updatePostStatus(int postId, String status) async {
+  Future<int> updatePostStatus(dynamic postId, String status) async {
     try {
       final db = await _db;
       
@@ -264,6 +353,29 @@ class FoundRepository {
       });
     } catch (e) {
       print('Error fetching all found posts: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a found post by ID.
+  /// 
+  /// [postId] - The id of the post to delete
+  /// 
+  /// Returns the number of rows affected (should be 1 on success).
+  Future<int> deletePost(dynamic postId) async {
+    try {
+      final db = await _db;
+      
+      final deletedRows = await db.delete(
+        'found_posts',
+        where: 'id = ?',
+        whereArgs: [postId],
+      );
+
+      print('Successfully deleted found post $postId');
+      return deletedRows;
+    } catch (e) {
+      print('Error deleting found post: $e');
       rethrow;
     }
   }

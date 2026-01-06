@@ -1,12 +1,12 @@
 class NotificationModel {
-  final int? id; // INTEGER PRIMARY KEY AUTOINCREMENT
+  final dynamic id; // Can be int (SQLite) or String/UUID (Supabase)
   final String title; // TEXT
   final String message; // TEXT
-  final int? relatedPostId; // INTEGER
+  final dynamic relatedPostId; // Can be int or String/UUID
   final String? type; // TEXT
-  final bool isRead; // INTEGER (0/1)
+  final bool isRead; // BOOLEAN
   final String? createdAt; // TEXT
-  final int? userId; // INTEGER
+  final dynamic userId; // Can be int or String/UUID
 
   NotificationModel({
     this.id,
@@ -20,15 +20,27 @@ class NotificationModel {
   });
 
   factory NotificationModel.fromMap(Map<String, dynamic> map) {
+    // Helper to handle both int and String IDs
+    dynamic parseId(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      final strValue = value.toString();
+      try {
+        return int.parse(strValue);
+      } catch (e) {
+        return strValue; // Keep as string (UUID)
+      }
+    }
+
     return NotificationModel(
-      id: map['id'] is int ? map['id'] : (map['id'] != null ? int.parse(map['id'].toString()) : null),
-      title: map['title'],
-      message: map['message'],
-      relatedPostId: map['related_post_id'] is int ? map['related_post_id'] : (map['related_post_id'] != null ? int.parse(map['related_post_id'].toString()) : null),
+      id: parseId(map['id']),
+      title: map['title'] ?? '',
+      message: map['message'] ?? '',
+      relatedPostId: parseId(map['related_post_id']),
       type: map['type'],
-      isRead: map['is_read'] == 1, // convert 0/1 → bool
+      isRead: map['is_read'] == 1 || map['is_read'] == true, // Handle both int (SQLite) and bool (Supabase)
       createdAt: map['created_at'],
-      userId: map['user_id'] is int ? map['user_id'] : (map['user_id'] != null ? int.parse(map['user_id'].toString()) : null),
+      userId: parseId(map['user_id']),
     );
   }
 

@@ -13,9 +13,14 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
+import 'dart:io';
 import '../../theme/app_colors.dart';
 import '../../cubits/lost/lost_cubit.dart';
 import '../../data/models/lost_post.dart';
+import '../../services/auth_service.dart';
+import '../../core/utils/image_helper.dart';
+import '../../core/errors/app_exceptions.dart';
+import '../../core/logging/app_logger.dart';
 
 class LostItemPopup extends StatefulWidget {
   const LostItemPopup({super.key});
@@ -36,7 +41,9 @@ class _LostItemPopupState extends State<LostItemPopup> {
   
   /// Controller for tags text field
   final _tagsController = TextEditingController();
-  // List<String> _uploadedImages = []; // TODO: Use when implementing image picker
+  
+  /// Selected image path
+  String? _selectedImagePath;
 
   @override
   void dispose() {
@@ -159,8 +166,34 @@ class _LostItemPopupState extends State<LostItemPopup> {
                       ),
                       const SizedBox(height: 8),
                       InkWell(
-                        onTap: () {
-                          // TODO: Implement image picker
+                        onTap: () async {
+                          try {
+                            final imagePath = await ImageHelper.pickImage();
+                            if (imagePath != null && mounted) {
+                              setState(() {
+                                _selectedImagePath = imagePath;
+                              });
+                            }
+                          } on ImageException catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.message),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            AppLogger.e('Error picking image', e);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed to pick image. Please try again.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                         },
                         child: Container(
                           width: double.infinity,
@@ -175,40 +208,69 @@ class _LostItemPopupState extends State<LostItemPopup> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.add_photo_alternate_outlined,
-                                size: 28,
-                                color: AppColors.textTertiary,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context)!.clickToUploadImages,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textTertiary,
-                                  fontSize: 12,
-                                  fontFamily: 'Arimo',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.33,
+                          child: _selectedImagePath != null
+                              ? Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.file(
+                                        File(_selectedImagePath!),
+                                        width: double.infinity,
+                                        height: 122.53,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close, color: Colors.white),
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedImagePath = null;
+                                          });
+                                        },
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: Colors.black54,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      size: 28,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      AppLocalizations.of(context)!.clickToUploadImages,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: AppColors.textTertiary,
+                                        fontSize: 12,
+                                        fontFamily: 'Arimo',
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.33,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      AppLocalizations.of(context)!.pngJpgUpTo10MB,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: AppColors.textLight,
+                                        fontSize: 12,
+                                        fontFamily: 'Arimo',
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.33,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                AppLocalizations.of(context)!.pngJpgUpTo10MB,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: AppColors.textLight,
-                                  fontSize: 12,
-                                  fontFamily: 'Arimo',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.33,
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -423,12 +485,12 @@ class _LostItemPopupState extends State<LostItemPopup> {
                                   
                                   // Create LostPost from form data
                                   final post = LostPost(
-                                    photo: null, // TODO: Add image picker support
+                                    photo: _selectedImagePath,
                                     description: _descriptionController.text.trim(),
                                     location: _locationController.text.trim(),
                                     category: _tagsController.text.trim(),
                                     createdAt: DateTime.now().toIso8601String(),
-                                    userId: 1, // TODO: Replace with actual logged-in user ID
+                                    userId: AuthService().currentUserId ?? 1,
                                     status: 'pending', // New posts start as pending
                                   );
                                   

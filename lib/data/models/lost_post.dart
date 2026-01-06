@@ -1,12 +1,12 @@
 class LostPost {
-  final int? id; // INTEGER PRIMARY KEY AUTOINCREMENT
+  final dynamic id; // Can be int (SQLite) or String/UUID (Supabase)
   final String? photo; // TEXT
   final String? description; // TEXT
   final String status; // TEXT (default 'pending')
   final String? location; // TEXT
   final String? category; // TEXT
   final String? createdAt; // TEXT
-  final int? userId; // INTEGER (FK to users.id)
+  final dynamic userId; // Can be int (SQLite) or String/UUID (Supabase)
 
   LostPost({
     this.id,
@@ -20,15 +20,38 @@ class LostPost {
   });
 
   factory LostPost.fromMap(Map<String, dynamic> map) {
+    // Handle both int IDs (SQLite) and String/UUID IDs (Supabase)
+    dynamic postId = map['id'];
+    if (postId != null && postId is String) {
+      // Try to parse as int (for numeric strings), otherwise keep as String (UUID)
+      try {
+        postId = int.parse(postId);
+      } catch (e) {
+        // Keep as String (UUID from Supabase)
+        postId = postId;
+      }
+    }
+    
+    dynamic userId = map['user_id'];
+    if (userId != null && userId is String) {
+      // Try to parse as int (for numeric strings), otherwise keep as String (UUID)
+      try {
+        userId = int.parse(userId);
+      } catch (e) {
+        // Keep as String (UUID from Supabase)
+        userId = userId;
+      }
+    }
+    
     return LostPost(
-      id: map['id'] is int ? map['id'] : (map['id'] != null ? int.parse(map['id'].toString()) : null),
+      id: postId,
       photo: map['photo'],
       description: map['description'],
-      status: map['status'],
+      status: map['status'] ?? 'pending',
       location: map['location'],
       category: map['category'],
       createdAt: map['created_at'],
-      userId: map['user_id'] is int ? map['user_id'] : (map['user_id'] != null ? int.parse(map['user_id'].toString()) : null),
+      userId: userId,
     );
   }
 

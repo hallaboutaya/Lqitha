@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../cubits/admin/admin_cubit.dart';
 import '../../cubits/admin/admin_state.dart';
 import '../../widgets/admin/stat_card.dart';
@@ -7,6 +8,7 @@ import '../../widgets/admin/tab_selector.dart';
 import '../../widgets/admin/post_card.dart';
 import '../../services/service_locator.dart';
 import '../../services/auth_service.dart';
+import '../../data/repositories/user_repository.dart';
 import '../auth/login/login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -18,6 +20,7 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final UserRepository _userRepository = getIt<UserRepository>();
 
   @override
   void dispose() {
@@ -29,82 +32,114 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => getIt<AdminCubit>()..loadPendingPosts(),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-        body: SafeArea(
-          child: BlocBuilder<AdminCubit, AdminState>(
-            builder: (context, state) {
-              if (state is AdminLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
+      child: Builder(
+        builder: (scopedContext) {
+          return BlocListener<AdminCubit, AdminState>(
+            listener: (context, state) {
               if (state is AdminError) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text('Error: ${state.message}'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.read<AdminCubit>().loadPendingPosts();
-                        },
-                        child: const Text('Retry'),
-                      ),
-                    ],
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
                   ),
                 );
               }
-
-              if (state is AdminLoaded) {
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildHeader(),
-                        const SizedBox(height: 24),
-                        _buildStatistics(state.statistics),
-                        const SizedBox(height: 24),
-                        _buildSearchBar(),
-                        const SizedBox(height: 24),
-                        TabSelector(
-                          currentTab: state.currentTab,
-                          onTabChanged: (tab) {
-                            context.read<AdminCubit>().toggleTab(tab);
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        _buildPostsList(state),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              return const SizedBox();
             },
-          ),
-        ),
+            child: Scaffold(
+              backgroundColor: const Color(0xFFF5F5F5),
+              body: SafeArea(
+                child: BlocBuilder<AdminCubit, AdminState>(
+                  builder: (context, state) {
+                    if (state is AdminLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    return _buildMainContent(context, state);
+                  },
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildMainContent(BuildContext scopedContext, AdminState state) {
+    if (state is AdminError) {
+      final l10n = AppLocalizations.of(scopedContext)!;
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                '${l10n.error}: ${state.message}',
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                scopedContext.read<AdminCubit>().loadPendingPosts();
+              },
+              child: Text(l10n.retry),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state is AdminLoaded) {
+      return RefreshIndicator(
+        onRefresh: () => scopedContext.read<AdminCubit>().loadPendingPosts(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(scopedContext),
+                const SizedBox(height: 24),
+                _buildStatistics(scopedContext, state.statistics),
+                const SizedBox(height: 24),
+                _buildSearchBar(scopedContext),
+                const SizedBox(height: 24),
+                TabSelector(
+                  currentTab: state.currentTab,
+                  onTabChanged: (tab) {
+                    scopedContext.read<AdminCubit>().toggleTab(tab);
+                  },
+                ),
+                const SizedBox(height: 24),
+                _buildPostsList(scopedContext, state),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox();
+  }
+
+  Widget _buildHeader(BuildContext scopedContext) {
+    final l10n = AppLocalizations.of(scopedContext)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Lqitha Admin',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        Text(
+          l10n.lqithaAdmin,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Manage posts and platform activity',
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+        Text(
+          l10n.managePostsAndActivity,
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
         const SizedBox(height: 16),
         Row(
@@ -120,7 +155,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text('Admin Panel'),
+                child: Text(l10n.adminPanel),
               ),
             ),
             const SizedBox(width: 12),
@@ -128,7 +163,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               onPressed: () {
                 // Logout and navigate to login screen
                 AuthService().logout();
-                Navigator.of(context).pushAndRemoveUntil(
+                Navigator.of(scopedContext).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                   (route) => false,
                 );
@@ -144,11 +179,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   horizontal: 20,
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.logout, size: 18),
-                  SizedBox(width: 4),
-                  Text('Logout'),
+                  const Icon(Icons.logout, size: 18),
+                  const SizedBox(width: 4),
+                  Text(l10n.logout),
                 ],
               ),
             ),
@@ -158,7 +193,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildStatistics(Map<String, int> stats) {
+  Widget _buildStatistics(BuildContext scopedContext, Map<String, int> stats) {
+    final l10n = AppLocalizations.of(scopedContext)!;
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -168,25 +204,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       childAspectRatio: 1.5,
       children: [
         StatCard(
-          title: 'Total Posts',
+          title: l10n.totalPosts,
           value: stats['totalPosts']?.toString() ?? '0',
           icon: Icons.article,
           color: Colors.purple,
         ),
         StatCard(
-          title: 'Pending Review',
+          title: l10n.pendingReview,
           value: stats['pendingPosts']?.toString() ?? '0',
           icon: Icons.pending,
           color: Colors.orange,
         ),
         StatCard(
-          title: 'Approved Today',
+          title: l10n.approvedToday,
           value: stats['approvedToday']?.toString() ?? '0',
           icon: Icons.check_circle,
           color: Colors.green,
         ),
         StatCard(
-          title: 'Active Users',
+          title: l10n.activeUsers,
           value: stats['activeUsers']?.toString() ?? '0',
           icon: Icons.trending_up,
           color: Colors.purple,
@@ -195,14 +231,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext scopedContext) {
+    final l10n = AppLocalizations.of(scopedContext)!;
     return Row(
       children: [
         Expanded(
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              hintText: 'Search posts...',
+              hintText: l10n.searchPosts,
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
               fillColor: Colors.white,
@@ -233,22 +270,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildPostsList(AdminLoaded state) {
+  Widget _buildPostsList(BuildContext scopedContext, AdminLoaded state) {
     final foundPosts = state.foundPosts;
     final lostPosts = state.lostPosts;
     final totalCount = foundPosts.length + lostPosts.length;
 
+    final l10n = AppLocalizations.of(scopedContext)!;
     if (totalCount == 0) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
-              Icon(Icons.inbox, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
+              const Icon(Icons.inbox, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
               Text(
-                'No posts to review',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                l10n.noPostsToReview,
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ],
           ),
@@ -269,33 +307,48 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             return const SizedBox.shrink();
           }
 
-          return PostCard(
-            id: postId,
-            type: 'found',
-            photo: post.photo,
-            username: 'User ${post.userId ?? "Unknown"}',
-            userPhoto: null,
-            createdAt: post.createdAt,
-            postType: 'found',
-            description: post.description,
-            location: post.location,
-            category: post.category,
-            onApprove: () {
-              context.read<AdminCubit>().approvePost(postId, 'found');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Post approved successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            onReject: () {
-              context.read<AdminCubit>().rejectPost(postId, 'found');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Post rejected'),
-                  backgroundColor: Colors.red,
-                ),
+          return FutureBuilder<String?>(
+            future: post.userId != null 
+                ? _userRepository.getUsernameById(post.userId!) 
+                : Future.value(null),
+            builder: (context, snapshot) {
+              final username = snapshot.data ?? 'Unknown User';
+              
+              return PostCard(
+                id: postId,
+                type: 'found',
+                photo: post.photo,
+                username: username,
+                userPhoto: null,
+                createdAt: post.createdAt,
+                postType: 'found',
+                description: post.description,
+                location: post.location,
+                category: post.category,
+                onApprove: () async {
+                  final l10n = AppLocalizations.of(scopedContext)!;
+                  await scopedContext.read<AdminCubit>().approvePost(postId, 'found');
+                  if (mounted) {
+                    ScaffoldMessenger.of(scopedContext).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.postApprovedSuccessfully),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                onReject: () async {
+                  final l10n = AppLocalizations.of(scopedContext)!;
+                  await scopedContext.read<AdminCubit>().rejectPost(postId, 'found');
+                  if (mounted) {
+                    ScaffoldMessenger.of(scopedContext).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.postRejected),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
               );
             },
           );
@@ -307,33 +360,48 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             return const SizedBox.shrink();
           }
 
-          return PostCard(
-            id: postId,
-            type: 'lost',
-            photo: post.photo,
-            username: 'User ${post.userId ?? "Unknown"}',
-            userPhoto: null,
-            createdAt: post.createdAt,
-            postType: 'lost',
-            description: post.description,
-            location: post.location,
-            category: post.category,
-            onApprove: () {
-              context.read<AdminCubit>().approvePost(postId, 'lost');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Post approved successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            onReject: () {
-              context.read<AdminCubit>().rejectPost(postId, 'lost');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Post rejected'),
-                  backgroundColor: Colors.red,
-                ),
+          return FutureBuilder<String?>(
+            future: post.userId != null 
+                ? _userRepository.getUsernameById(post.userId!) 
+                : Future.value(null),
+            builder: (context, snapshot) {
+              final username = snapshot.data ?? 'Unknown User';
+              
+              return PostCard(
+                id: postId,
+                type: 'lost',
+                photo: post.photo,
+                username: username,
+                userPhoto: null,
+                createdAt: post.createdAt,
+                postType: 'lost',
+                description: post.description,
+                location: post.location,
+                category: post.category,
+                onApprove: () async {
+                  final l10n = AppLocalizations.of(scopedContext)!;
+                  await scopedContext.read<AdminCubit>().approvePost(postId, 'lost');
+                  if (mounted) {
+                    ScaffoldMessenger.of(scopedContext).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.postApprovedSuccessfully),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                onReject: () async {
+                  final l10n = AppLocalizations.of(scopedContext)!;
+                  await scopedContext.read<AdminCubit>().rejectPost(postId, 'lost');
+                  if (mounted) {
+                    ScaffoldMessenger.of(scopedContext).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.postRejected),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
               );
             },
           );

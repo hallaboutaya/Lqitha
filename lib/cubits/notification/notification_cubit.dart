@@ -43,13 +43,20 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// - Page is first opened
   /// - User pulls to refresh
   /// - After marking notifications as read
-  Future<void> loadAllNotifications(int userId) async {
+  Future<void> loadAllNotifications(dynamic userId) async {
     try {
       // Emit loading state to show loading indicator
       emit(NotificationLoading());
 
+      print('📬 Loading notifications for user ID: $userId');
+      
       // Fetch all notifications for this user
       final notifications = await _repository.getAllNotifications(userId);
+      
+      print('📬 Found ${notifications.length} notifications for user $userId');
+      for (var notif in notifications) {
+        print('   - Notification ID: ${notif.id}, Type: ${notif.type}, Message: ${notif.message}');
+      }
 
       // Get unread count for badge
       final unreadCount = await _repository.getUnreadCount(userId);
@@ -81,7 +88,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// Useful for a "unread only" filter view.
   /// 
   /// [userId] - The id of the current user
-  Future<void> loadUnreadNotifications(int userId) async {
+  Future<void> loadUnreadNotifications(dynamic userId) async {
     try {
       emit(NotificationLoading());
 
@@ -117,7 +124,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// Flow:
   /// 1. Update notification in database
   /// 2. Reload notifications to reflect the change
-  Future<void> markAsRead(int notificationId, int userId) async {
+  Future<void> markAsRead(dynamic notificationId, dynamic userId) async {
     try {
       // Mark as read in database
       await _repository.markAsRead(notificationId);
@@ -146,7 +153,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// 1. Emit success message
   /// 2. Update all notifications in database
   /// 3. Reload notifications
-  Future<void> markAllAsRead(int userId) async {
+  Future<void> markAllAsRead(dynamic userId) async {
     try {
       // Mark all as read in database
       final updatedCount = await _repository.markAllAsRead(userId);
@@ -172,7 +179,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// 
   /// [userId] - The id of the current user
   /// [type] - The notification type to filter by (e.g., 'found_match')
-  Future<void> filterByType(int userId, String type) async {
+  Future<void> filterByType(dynamic userId, String type) async {
     try {
       // If we have cached data, filter client-side for instant results
       if (_allNotifications.isNotEmpty && _currentFilter == 'all') {
@@ -215,7 +222,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// [userId] - The id of the current user
   /// 
   /// Returns the count of unread notifications.
-  Future<int> getUnreadCount(int userId) async {
+  Future<int> getUnreadCount(dynamic userId) async {
     try {
       return await _repository.getUnreadCount(userId);
     } catch (e) {
@@ -236,7 +243,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// would likely be created server-side or by background processes.
   Future<void> createNotification(
     NotificationModel notification,
-    int userId,
+    dynamic userId,
   ) async {
     try {
       await _repository.insertNotification(notification);
@@ -254,7 +261,7 @@ class NotificationCubit extends Cubit<NotificationState> {
   /// Can be connected to pull-to-refresh UI.
   /// 
   /// [userId] - The id of the current user
-  Future<void> refresh(int userId) async {
+  Future<void> refresh(dynamic userId) async {
     if (_currentFilter == 'unread') {
       await loadUnreadNotifications(userId);
     } else {

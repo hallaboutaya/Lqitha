@@ -1,5 +1,5 @@
 class User {
-  final int? id; // INTEGER PRIMARY KEY AUTOINCREMENT
+  final dynamic id; // Can be int (SQLite) or String/UUID (Supabase)
   final String username; // TEXT
   final String email; // TEXT
   final String password; // TEXT
@@ -24,14 +24,31 @@ class User {
   });
 
   factory User.fromMap(Map<String, dynamic> map) {
+    // Handle both int IDs (SQLite) and String/UUID IDs (Supabase)
+    dynamic userId = map['id'];
+    if (userId != null) {
+      if (userId is int) {
+        // SQLite integer ID
+        userId = userId;
+      } else if (userId is String) {
+        // Try to parse as int (for numeric strings), otherwise keep as String (UUID)
+        try {
+          userId = int.parse(userId);
+        } catch (e) {
+          // Keep as String (UUID from Supabase)
+          userId = userId;
+        }
+      }
+    }
+    
     return User(
-      id: map['id'] is int ? map['id'] : (map['id'] != null ? int.parse(map['id'].toString()) : null),
-      username: map['username'],
-      email: map['email'],
-      password: map['password'],
+      id: userId,
+      username: map['username'] ?? '',
+      email: map['email'] ?? '',
+      password: map['password'] ?? '',
       phoneNumber: map['phone_number'],
       photo: map['photo'],
-      role: map['role'],
+      role: map['role'] ?? 'user',
       points: map['points'] ?? 0,
       createdAt: map['created_at'],
       updatedAt: map['updated_at'],

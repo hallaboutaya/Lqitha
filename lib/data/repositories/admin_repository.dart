@@ -88,7 +88,7 @@ class AdminRepository {
   }
 
   /// Approve a post (update status to 'approved')
-  Future<void> approvePost(int id, String type) async {
+  Future<void> approvePost(dynamic id, String type) async {
     final db = await DBHelper.getDatabase();
     await db.update(
       type == 'lost' ? 'lost_posts' : 'found_posts',
@@ -99,7 +99,7 @@ class AdminRepository {
   }
 
   /// Reject a post (update status to 'rejected')
-  Future<void> rejectPost(int id, String type) async {
+  Future<void> rejectPost(dynamic id, String type) async {
     final db = await DBHelper.getDatabase();
     await db.update(
       type == 'lost' ? 'lost_posts' : 'found_posts',

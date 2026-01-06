@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../cubits/user_profile/user_profile_cubit.dart';
 import '../../cubits/user_profile/user_profile_state.dart';
 
@@ -8,6 +9,8 @@ class PointsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return BlocBuilder<UserProfileCubit, UserProfileState>(
       builder: (context, state) {
         final points = state.user?.points ?? 0;
@@ -23,17 +26,17 @@ class PointsCard extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.emoji_events_outlined, color: Colors.white),
-                      SizedBox(width: 6),
-                      Text('Total Points', style: TextStyle(color: Colors.white)),
+                      const Icon(Icons.emoji_events_outlined, color: Colors.white),
+                      const SizedBox(width: 6),
+                      Text(l10n.totalPoints, style: const TextStyle(color: Colors.white)),
                     ],
                   ),
-                  Text('Active', style: TextStyle(color: Colors.white70)),
+                  Text(l10n.active, style: const TextStyle(color: Colors.white70)),
                 ],
               ),
               const SizedBox(height: 10),
@@ -47,7 +50,7 @@ class PointsCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Keep helping others to earn more!',
+                l10n.keepHelpingOthers,
                 style: TextStyle(color: Colors.white.withOpacity(0.9)),
               ),
               const SizedBox(height: 10),
@@ -59,7 +62,7 @@ class PointsCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () {},
-                child: const Text('Reclaim My Points'),
+                child: Text(l10n.reclaimMyPoints),
               )
             ],
           ),

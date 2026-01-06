@@ -12,9 +12,16 @@ import '../../cubits/notification/notification_state.dart';
 import '../../data/models/notification.dart';
 import '../../services/service_locator.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../data/repositories/found_repository.dart';
+import '../../services/auth_service.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key});
+  const NotificationsPage({
+    super.key,
+    this.isVisible = true,
+  });
+
+  final bool isVisible;
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -23,15 +30,35 @@ class NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<NotificationsPage> {
   late final NotificationCubit _notificationCubit;
   final UserRepository _userRepository = getIt<UserRepository>();
-  
-  // TODO: Replace with actual logged-in user ID from auth system
-  static const int _currentUserId = 1;
+  late final dynamic _currentUserId; // Can be int (SQLite) or String (UUID from Supabase)
 
   @override
   void initState() {
     super.initState();
+    // Get current logged-in user ID from AuthService
+    _currentUserId = AuthService().currentUserId ?? 1;
     _notificationCubit = getIt<NotificationCubit>();
-    _notificationCubit.loadAllNotifications(_currentUserId);
+    
+    print('🔔 NotificationsPage initState: isVisible=${widget.isVisible}, userId=$_currentUserId');
+    
+    // Load notifications on first init ONLY if visible
+    if (widget.isVisible) {
+      print('🔔 Loading notifications in initState');
+      _notificationCubit.loadAllNotifications(_currentUserId);
+    }
+  }
+
+  @override
+  void didUpdateWidget(NotificationsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    print('🔔 didUpdateWidget: old.isVisible=${oldWidget.isVisible}, new.isVisible=${widget.isVisible}');
+    
+    // Reload notifications when page becomes visible
+    if (!oldWidget.isVisible && widget.isVisible) {
+      print('📬 Notifications tab became visible, reloading...');
+      _notificationCubit.loadAllNotifications(_currentUserId);
+    }
   }
 
   @override
@@ -45,16 +72,63 @@ class _NotificationsPageState extends State<NotificationsPage> {
     BuildContext context,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final foundRepository = getIt<FoundRepository>();
     
     final items = <_NotificationItem>[];
     
     for (final notification in notifications) {
-      // Get username from database
-      String userName = 'User ${notification.userId ?? 'Unknown'}';
-      if (notification.userId != null) {
-        final username = await _userRepository.getUsernameById(notification.userId!);
-        if (username != null) {
-          userName = username;
+      String userName;
+      String? avatarUrl;
+      bool isAdminNotification = notification.type == 'post_approved' || notification.type == 'post_rejected';
+      bool isSystemNotification = notification.type == 'point_change' || notification.type == 'system';
+      
+      if (isAdminNotification) {
+        // Admin notifications - from system/admin, not a user
+        userName = 'Admin';
+        avatarUrl = null; // Will show admin icon
+      } else if (isSystemNotification) {
+        // Reward/System notifications
+        userName = 'Trust Points';
+        avatarUrl = null; // Will show system icon
+      } else if (notification.type == 'item_found' && notification.relatedPostId != null) {
+        // For "item_found": notification.userId is the post owner (recipient)
+        // But we want to show WHO found it - that's in the relatedPostId (the found post)
+        try {
+          final foundPost = await foundRepository.getPostById(notification.relatedPostId!);
+          if (foundPost?.userId != null) {
+            final finderUser = await _userRepository.getUserById(foundPost!.userId!);
+            if (finderUser != null) {
+              userName = finderUser.username;
+              avatarUrl = finderUser.photo;
+            } else {
+              userName = 'User ${foundPost.userId}';
+              avatarUrl = null;
+            }
+          } else {
+            userName = 'Someone';
+            avatarUrl = null;
+          }
+        } catch (e) {
+          print('Error fetching finder info: $e');
+          userName = 'Someone';
+          avatarUrl = null;
+        }
+      } else {
+        // For other user notifications, try to get user info if available
+        // Note: For contact_unlocked, we don't store who unlocked it currently
+        // So we'll just show a generic message
+        if (notification.userId != null) {
+          final user = await _userRepository.getUserById(notification.userId!);
+          if (user != null) {
+            userName = user.username;
+            avatarUrl = user.photo;
+          } else {
+            userName = 'User ${notification.userId}';
+            avatarUrl = null;
+          }
+        } else {
+          userName = 'Someone';
+          avatarUrl = null;
         }
       }
       
@@ -65,6 +139,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
       if (notification.type == 'contact_unlocked') {
         action = NotificationAction.confirmReturn;
         actionLabel = l10n.yesIGotMyItemBack;
+      } else if (isAdminNotification || isSystemNotification) {
+        // Admin and System notifications don't need action buttons
+        action = NotificationAction.getContact; // Will be hidden via UI
+        actionLabel = '';
       } else {
         action = NotificationAction.getContact;
         actionLabel = l10n.getContact;
@@ -74,10 +152,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
         userName: userName,
         message: notification.message,
         timeAgo: _formatTimeAgo(notification.createdAt),
-        avatarUrl: 'https://i.pravatar.cc/150?img=${notification.id ?? 1}',
+        avatarUrl: avatarUrl,
         action: action,
         actionLabel: actionLabel,
         itemTitle: null,
+        isAdmin: isAdminNotification,
+        isSystem: isSystemNotification,
       ));
     }
     
@@ -211,13 +291,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
     
     switch (item.action) {
       case NotificationAction.getContact:
-        showDialog(
-          context: context,
-          builder: (_) => PaymentPopup(
-            userName: item.userName,
-            itemTitle: item.itemTitle ?? AppLocalizations.of(context)!.yourItem,
-          ),
-        );
+        if (notification.relatedPostId != null) {
+          showDialog(
+            context: context,
+            builder: (_) => PaymentPopup(
+              userName: item.userName,
+              itemTitle: item.itemTitle ?? AppLocalizations.of(context)!.yourItem,
+              postId: notification.relatedPostId!,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Post ID not available'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
         break;
       case NotificationAction.confirmReturn:
         ScaffoldMessenger.of(context).showSnackBar(
@@ -239,6 +329,32 @@ class _NotificationCard extends StatelessWidget {
 
   final _NotificationItem item;
   final VoidCallback onAction;
+
+  Widget _buildAvatarPlaceholder() {
+    IconData icon;
+    if (item.isAdmin) {
+      icon = Icons.admin_panel_settings;
+    } else if (item.isSystem) {
+      icon = Icons.stars;
+    } else {
+      icon = Icons.person;
+    }
+    
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.primaryPurple.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        icon,
+        color: AppColors.primaryPurple,
+        size: 24,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,19 +384,15 @@ class _NotificationCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipOval(
-                child: Image.network(
-                  item.avatarUrl,
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 48,
-                    height: 48,
-                    color: AppColors.primaryPurple.withOpacity(0.1),
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.person, color: AppColors.primaryPurple),
-                  ),
-                ),
+                child: (item.avatarUrl != null && item.avatarUrl!.isNotEmpty)
+                    ? Image.network(
+                        item.avatarUrl!,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
+                      )
+                    : _buildAvatarPlaceholder(),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -312,12 +424,15 @@ class _NotificationCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _NotificationActionButton(
-            label: item.actionLabel,
-            action: item.action,
-            onTap: onAction,
-          ),
+          // Only show action button if there's an action label (hide for admin notifications)
+          if (item.actionLabel.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _NotificationActionButton(
+              label: item.actionLabel,
+              action: item.action,
+              onTap: onAction,
+            ),
+          ],
         ],
       ),
     );
@@ -378,19 +493,23 @@ class _NotificationItem {
     required this.userName,
     required this.message,
     required this.timeAgo,
-    required this.avatarUrl,
+    this.avatarUrl,
     required this.action,
     required this.actionLabel,
     this.itemTitle,
+    this.isAdmin = false,
+    this.isSystem = false,
   });
 
   final String userName;
   final String message;
   final String timeAgo;
-  final String avatarUrl;
+  final String? avatarUrl;
   final NotificationAction action;
   final String actionLabel;
   final String? itemTitle;
+  final bool isAdmin;
+  final bool isSystem;
 }
 
 enum NotificationAction { getContact, confirmReturn }

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../models/profile_post_model.dart';
 import '../../data/models/found_post.dart';
 import '../../data/models/lost_post.dart';
-import '../../data/databases/db_helper.dart';
+import '../../data/repositories/found_repository.dart';
+import '../../data/repositories/lost_repository.dart';
+import '../../services/service_locator.dart';
 import 'post_card.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class MyPostsTabs extends StatefulWidget {
-  final int userId;
+  final dynamic userId; // Can be int (SQLite) or String (UUID from Supabase)
   
   const MyPostsTabs({super.key, required this.userId});
 
@@ -21,6 +24,9 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
   List<ProfilePost> onHoldPosts = [];
   List<ProfilePost> rejectedPosts = [];
   bool _isLoading = true;
+  
+  final FoundRepository _foundRepository = getIt<FoundRepository>();
+  final LostRepository _lostRepository = getIt<LostRepository>();
 
   @override
   void initState() {
@@ -32,33 +38,24 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
     setState(() => _isLoading = true);
     
     try {
-      final db = await DBHelper.getDatabase();
+      // Fetch found posts for THIS USER ONLY using repository
+      final foundPosts = await _foundRepository.getPostsByUserId(widget.userId);
       
-      // Fetch found posts for THIS USER ONLY
-      final foundMaps = await db.query(
-        'found_posts',
-        where: 'user_id = ?',
-        whereArgs: [widget.userId],
-      );
-      
-      // Fetch lost posts for THIS USER ONLY
-      final lostMaps = await db.query(
-        'lost_posts',
-        where: 'user_id = ?',
-        whereArgs: [widget.userId],
-      );
+      // Fetch lost posts for THIS USER ONLY using repository
+      final lostPosts = await _lostRepository.getPostsByUserId(widget.userId);
       
       // Convert to ProfilePost models
       final List<ProfilePost> allPosts = [];
       
-      for (final map in foundMaps) {
-        final foundPost = FoundPost.fromMap(map);
-        allPosts.add(_convertToProfilePost(foundPost, isFound: true));
-      }
-      
-      for (final map in lostMaps) {
-        final lostPost = LostPost.fromMap(map);
-        allPosts.add(_convertToProfilePost(lostPost, isFound: false));
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        for (final foundPost in foundPosts) {
+          allPosts.add(_convertToProfilePost(foundPost, isFound: true, l10n: l10n));
+        }
+        
+        for (final lostPost in lostPosts) {
+          allPosts.add(_convertToProfilePost(lostPost, isFound: false, l10n: l10n));
+        }
       }
       
       // Group by status
@@ -74,8 +71,8 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
     }
   }
 
-  ProfilePost _convertToProfilePost(dynamic post, {required bool isFound}) {
-    final String postType = isFound ? 'Found' : 'Lost';
+  ProfilePost _convertToProfilePost(dynamic post, {required bool isFound, required AppLocalizations l10n}) {
+    final String postType = isFound ? l10n.found : l10n.lost;
     final String description = post.description ?? 'No description';
     final String category = post.category ?? 'Item';
     
@@ -89,11 +86,11 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
         break;
       case 'pending':
         uiStatus = 'on_hold';
-        note = 'Waiting for admin approval';
+        note = l10n.waitingForAdminApproval;
         break;
       case 'rejected':
         uiStatus = 'rejected';
-        note = 'Post was rejected by admin';
+        note = l10n.postWasRejectedByAdmin;
         break;
       default:
         uiStatus = 'on_hold';
@@ -128,20 +125,22 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'My Posts',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          l10n.myPosts,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _tabButton('Validated', 0),
-            _tabButton('On Hold', 1),
-            _tabButton('Rejected', 2),
+            _tabButton(l10n.validated, 0),
+            _tabButton(l10n.onHold, 1),
+            _tabButton(l10n.rejected, 2),
           ],
         ),
         const SizedBox(height: 12),
@@ -157,7 +156,7 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Text(
-                        'No posts in this category',
+                        l10n.noPostsInCategory,
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                     ),

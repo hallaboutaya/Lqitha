@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/lost_post.dart';
 import '../../data/repositories/lost_repository.dart';
+import '../../data/repositories/unlock_repository.dart';
 import 'lost_state.dart';
 
 /// Cubit for managing Lost Posts state.
@@ -16,12 +17,13 @@ import 'lost_state.dart';
 class LostCubit extends Cubit<LostState> {
   /// Repository instance for database operations
   final LostRepository _repository;
+  final UnlockRepository _unlockRepository;
 
   /// Cache of all loaded posts for client-side filtering
   List<LostPost> _allPosts = [];
 
   /// Constructor initializes cubit with LostInitial state
-  LostCubit(this._repository) : super(LostInitial());
+  LostCubit(this._repository, this._unlockRepository) : super(LostInitial());
 
   /// Load all approved lost posts from the database.
   /// 
@@ -42,15 +44,22 @@ class LostCubit extends Cubit<LostState> {
       emit(LostLoading());
 
       // Fetch only approved posts from database
-      // Pending posts won't appear until admin approves them
       final posts = await _repository.getApprovedPosts();
+      
+      // Fetch unlocked post IDs for the current user
+      final unlocks = await _unlockRepository.getUserUnlocks();
+      final unlockedIds = unlocks
+          .where((u) => u.postType == 'lost')
+          .map((u) => u.postId)
+          .toSet();
 
       // Cache posts for client-side search/filter
       _allPosts = posts;
 
-      // Emit loaded state with posts
+      // Emit loaded state with posts and unlock info
       emit(LostLoaded(
         posts: posts,
+        unlockedPostIds: unlockedIds,
         message: posts.isEmpty ? 'No lost items yet' : null,
       ));
     } catch (e) {
@@ -120,7 +129,7 @@ class LostCubit extends Cubit<LostState> {
       emit(LostLoading());
 
       // Insert post - it will have status='pending' by default
-      final id = await _repository.insertPost(post);
+      await _repository.insertPost(post);
 
       // Emit success message
       emit(LostSuccess(
@@ -191,10 +200,20 @@ class LostCubit extends Cubit<LostState> {
   }
 
   /// Refresh the posts list.
-  /// 
-  /// Convenience method that just calls loadApprovedPosts.
-  /// Can be connected to pull-to-refresh UI.
   Future<void> refresh() async {
     await loadApprovedPosts();
+  }
+
+  /// Mark a post as unlocked in the local state
+  Future<void> unlockPost(String postId) async {
+    if (state is LostLoaded) {
+      final current = state as LostLoaded;
+      try {
+        final updatedUnlocks = Set<String>.from(current.unlockedPostIds)..add(postId);
+        emit(current.copyWith(unlockedPostIds: updatedUnlocks));
+      } catch (e) {
+        print('Error unlocking lost post in cubit: $e');
+      }
+    }
   }
 }
