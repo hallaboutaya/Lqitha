@@ -23,6 +23,7 @@ import '../services/api_client.dart';
 import '../config/api_config.dart';
 import '../core/logging/app_logger.dart';
 import '../services/notification_service.dart';
+import '../cubits/admin/user_management_cubit.dart';
 
 /// Service locator for dependency injection using get_it.
 /// 
@@ -97,6 +98,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory<LostCubit>(() => LostCubit(getIt<LostRepository>(), getIt<UnlockRepository>()));
   getIt.registerFactory<NotificationCubit>(() => NotificationCubit(getIt<NotificationRepository>()));
   getIt.registerFactory<AdminCubit>(() => AdminCubit(getIt<AdminRepository>()));
+  getIt.registerFactory<UserManagementCubit>(() => UserManagementCubit(getIt<AdminRepository>()));
   
   // Register AuthCubit
   getIt.registerFactory<AuthCubit>(() => AuthCubit(

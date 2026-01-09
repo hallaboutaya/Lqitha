@@ -5,10 +5,10 @@ class TabSelector extends StatelessWidget {
   final Function(String) onTabChanged;
 
   const TabSelector({
-    Key? key,
+    super.key,
     required this.currentTab,
     required this.onTabChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +19,8 @@ class TabSelector extends StatelessWidget {
         _buildTab('approved', 'Approved', null),
         const SizedBox(width: 16),
         _buildTab('rejected', 'Rejected', null),
+        const SizedBox(width: 16),
+        _buildTab('resolved', 'Resolved', null),
       ],
     );
   }

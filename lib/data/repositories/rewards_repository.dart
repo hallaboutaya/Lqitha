@@ -1,5 +1,4 @@
 import '../models/point_transaction.dart';
-import '../../config/api_config.dart';
 import '../../services/api_client.dart';
 
 class RewardsRepository {

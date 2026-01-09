@@ -81,6 +81,20 @@ def get_found_post(current_user_id, post_id):
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
 
+@posts_bp.route('/found-posts/<post_id>/status', methods=['PUT'])
+@token_required
+def update_found_post_status(current_user_id, post_id):
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+        if not new_status:
+            return jsonify({'success': False, 'error': 'Status required'}), 400
+            
+        response = supabase.table('found_posts').update({'status': new_status}).eq('id', post_id).execute()
+        return jsonify({'success': True, 'post': response.data[0]}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # ==================== LOST POSTS ====================
 
 @posts_bp.route('/lost-posts', methods=['GET', 'POST'])
@@ -147,9 +161,16 @@ def get_lost_post(current_user_id, post_id):
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
             
-    elif request.method == 'DELETE':
-        try:
-            response = supabase.table('lost_posts').delete().eq('id', post_id).execute()
-            return jsonify({'success': True, 'message': 'Post deleted'}), 200
-        except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+@posts_bp.route('/lost-posts/<post_id>/status', methods=['PUT'])
+@token_required
+def update_lost_post_status(current_user_id, post_id):
+    try:
+        data = request.get_json()
+        new_status = data.get('status')
+        if not new_status:
+            return jsonify({'success': False, 'error': 'Status required'}), 400
+            
+        response = supabase.table('lost_posts').update({'status': new_status}).eq('id', post_id).execute()
+        return jsonify({'success': True, 'post': response.data[0]}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

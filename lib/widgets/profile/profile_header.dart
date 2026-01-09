@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
 import '../../cubits/user_profile/user_profile_cubit.dart';
 import '../../cubits/user_profile/user_profile_state.dart';
 import '../../screens/settings/settings_page.dart';
@@ -47,7 +45,7 @@ class ProfileHeader extends StatelessWidget {
                   const Icon(Icons.error_outline, color: Colors.red, size: 48),
                   const SizedBox(height: 8),
                   Text(
-                    '${l10n.error} loading profile',
+                    l10n.errorLoadingProfile,
                     style: const TextStyle(color: Colors.red),
                   ),
                   Text(

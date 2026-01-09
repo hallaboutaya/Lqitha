@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hopefully_last/data/repositories/found_repository.dart';
 import 'package:hopefully_last/data/models/found_post.dart';
-import 'package:hopefully_last/data/databases/db_helper.dart';
 
 void main() {
   group('FoundRepository', () {

@@ -2,15 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
 import '../../cubits/locale/locale_cubit.dart';
 import '../../cubits/locale/locale_state.dart';
 import '../../cubits/user_profile/user_profile_cubit.dart';
 import '../profile/edit_profile_screen.dart';
 import 'change_password_screen.dart';
+import '../../services/auth_service.dart';
+import '../auth/login/login_screen.dart';
 
-class SettingsPage extends StatelessWidget {
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _pushNotifications = true;
+  bool _emailAlerts = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _pushNotifications = prefs.getBool('push_notifications') ?? true;
+      _emailAlerts = prefs.getBool('email_alerts') ?? false;
+    });
+  }
+
+  Future<void> _saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('push_notifications', _pushNotifications);
+    await prefs.setBool('email_alerts', _emailAlerts);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,25 +107,140 @@ class SettingsPage extends StatelessWidget {
                 icon: Icons.notifications_none,
                 title: l10n.notifications,
                 subtitle: l10n.manageAlerts,
-                onTap: () {
-                  // TODO: Implement notification settings
-                },
+                onTap: () => _showNotificationSettings(context, l10n),
               ),
               const SizedBox(height: 24),
               _buildSectionTitle(l10n.support),
-              _buildSettingsTile(
-                icon: Icons.help_outline,
-                title: l10n.helpCenter,
-                onTap: () {},
-              ),
+
               _buildSettingsTile(
                 icon: Icons.info_outline,
                 title: l10n.aboutLqitha,
-                onTap: () {},
+                onTap: () => _showAboutDialog(context, l10n),
+              ),
+              const SizedBox(height: 12),
+              _buildSettingsTile(
+                icon: Icons.logout,
+                title: l10n.logout,
+                iconColor: Colors.red,
+                textColor: Colors.red,
+                onTap: () => _handleLogout(context),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleLogout(BuildContext context) {
+    AuthService().logout();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  void _showNotificationSettings(BuildContext context, AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.notifications),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: Text(l10n.pushNotifications),
+                value: _pushNotifications,
+                onChanged: (val) {
+                  setDialogState(() => _pushNotifications = val);
+                  setState(() {});
+                },
+                activeColor: AppColors.primaryOrange,
+              ),
+              SwitchListTile(
+                title: Text(l10n.emailAlerts),
+                value: _emailAlerts,
+                onChanged: (val) {
+                  setDialogState(() => _emailAlerts = val);
+                  setState(() {});
+                },
+                activeColor: AppColors.primaryOrange,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                _saveSettings();
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.settingsSaved),
+                    backgroundColor: AppColors.primaryPurple,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context, AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.aboutLqitha),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryPurple.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.stars, color: AppColors.primaryPurple, size: 40),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(l10n.lqithaDescription, style: const TextStyle(height: 1.5)),
+            const SizedBox(height: 20),
+            _buildAboutInfo(l10n.appVersion, "1.0.0"),
+            _buildAboutInfo(l10n.developers, "Lqitha Team"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutInfo(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }
@@ -118,6 +264,8 @@ class SettingsPage extends StatelessWidget {
     required IconData icon,
     required String title,
     String? subtitle,
+    Color? iconColor,
+    Color? textColor,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -137,14 +285,20 @@ class SettingsPage extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primaryPurple.withOpacity(0.1),
+            color: (iconColor ?? AppColors.primaryPurple).withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: AppColors.primaryPurple, size: 22),
+          child: Icon(icon, color: iconColor ?? AppColors.primaryPurple, size: 22),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        title: Text(
+          title, 
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: textColor ?? Colors.black,
+          ),
+        ),
         subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+        trailing: Icon(Icons.chevron_right, color: textColor?.withOpacity(0.5) ?? Colors.grey, size: 20),
         onTap: onTap,
       ),
     );

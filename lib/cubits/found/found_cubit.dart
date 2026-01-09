@@ -224,4 +224,26 @@ class FoundCubit extends Cubit<FoundState> {
       }
     }
   }
+
+  /// Filter posts by category.
+  void filterByCategory(String? category) {
+    try {
+      if (category == null || category.isEmpty) {
+        emit(FoundLoaded(posts: _allPosts));
+        return;
+      }
+
+      final filteredPosts = _allPosts.where((post) {
+        return post.category?.toLowerCase().contains(category.toLowerCase()) ?? false;
+      }).toList();
+
+      emit(FoundLoaded(
+        posts: filteredPosts,
+        message: filteredPosts.isEmpty ? 'No items in this category' : null,
+      ));
+    } catch (e) {
+      emit(FoundError('Error filtering posts'));
+      print('Error in filterByCategory: $e');
+    }
+  }
 }

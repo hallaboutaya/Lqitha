@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_text_styles.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../services/service_locator.dart';
 import '../../data/repositories/api/api_user_repository.dart';

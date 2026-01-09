@@ -165,6 +165,15 @@
   "enterFullName": "Entrez votre nom complet",
   "enterYourEmail": "Entrez votre email",
   "enterPhoneNumber": "Entrez votre numéro de téléphone",
-  "phoneNumber": "Numéro de téléphone"
+  "phoneNumber": "Numéro de téléphone",
+  "founds": "Trouvés",
+  "losts": "Perdus",
+  "profile": "Profil",
+  "appVersion": "Version de l'application",
+  "developers": "Développeurs",
+  "lqithaDescription": "Lqitha est une plateforme communautaire pour aider les gens à retrouver des objets perdus et à rendre ceux trouvés.",
+  "pushNotifications": "Notifications Push",
+  "emailAlerts": "Alertes Email",
+  "settingsSaved": "Paramètres enregistrés"
 }
 

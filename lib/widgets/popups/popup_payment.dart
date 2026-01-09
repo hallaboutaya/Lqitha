@@ -173,36 +173,39 @@ class PaymentPopup extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  // Info Box
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(13.26),
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 1.27,
-                          color: Color(0xFFE5E7EB),
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'This helps maintain our platform and rewards those who help reunite people with their belongings.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 12,
-                        fontFamily: 'Arimo',
-                        fontWeight: FontWeight.w400,
-                        height: 1.62,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Action Buttons
-                  Row(
+                   const SizedBox(height: 12),
+                   // Price Card
+                   _buildPriceCard(),
+                   const SizedBox(height: 12),
+                   // Info Box
+                   Container(
+                     width: double.infinity,
+                     padding: const EdgeInsets.all(13.26),
+                     decoration: ShapeDecoration(
+                       color: const Color(0xFFF9FAFB),
+                       shape: RoundedRectangleBorder(
+                         side: const BorderSide(
+                           width: 1.27,
+                           color: Color(0xFFE5E7EB),
+                         ),
+                         borderRadius: BorderRadius.circular(16),
+                       ),
+                     ),
+                     child: const Text(
+                       'This helps maintain our platform and rewards those who help reunite people with their belongings.',
+                       textAlign: TextAlign.center,
+                       style: TextStyle(
+                         color: AppColors.textTertiary,
+                         fontSize: 12,
+                         fontFamily: 'Arimo',
+                         fontWeight: FontWeight.w400,
+                         height: 1.62,
+                       ),
+                     ),
+                   ),
+                   const SizedBox(height: 16),
+                   // Action Buttons
+                   Row(
                     children: [
                       Expanded(
                         child: InkWell(

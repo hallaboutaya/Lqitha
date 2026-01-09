@@ -22,6 +22,7 @@ import '../../cubits/found/found_cubit.dart';
 import '../../cubits/found/found_state.dart';
 import '../../services/service_locator.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../widgets/dialogs/filter_dialog.dart';
 
 class FoundsPage extends StatefulWidget {
   /// Current bottom navigation index (passed from MainNavigation)
@@ -86,7 +87,14 @@ class _FoundsPageState extends State<FoundsPage> {
                       _foundCubit.searchPosts(value);
                     },
                     onFilterTap: () {
-                      // Handle filter tap
+                      showDialog(
+                        context: context,
+                        builder: (context) => FilterDialog(
+                          onApplyFilter: (category) {
+                            _foundCubit.filterByCategory(category);
+                          },
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -108,7 +116,7 @@ class _FoundsPageState extends State<FoundsPage> {
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () => _foundCubit.loadApprovedPosts(),
-                                child: const Text('Retry'),
+                                child: Text(AppLocalizations.of(context)!.retry),
                               ),
                             ],
                           ),
@@ -121,7 +129,7 @@ class _FoundsPageState extends State<FoundsPage> {
                         if (posts.isEmpty) {
                           return Center(
                             child: Text(
-                              state.message ?? 'No found items yet',
+                              state.message ?? AppLocalizations.of(context)!.noFoundItemsYet,
                               style: const TextStyle(color: AppColors.textSecondary),
                             ),
                           );

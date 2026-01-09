@@ -13,6 +13,7 @@
 library;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../cubits/found/found_cubit.dart';
@@ -20,6 +21,7 @@ import '../../services/service_locator.dart';
 import '../../data/repositories/found_repository.dart';
 import '../../data/repositories/lost_repository.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../data/models/user.dart' as model;
 import '../../cubits/lost/lost_cubit.dart';
 
 class ContactUnlockedPopup extends StatelessWidget {
@@ -32,20 +34,25 @@ class ContactUnlockedPopup extends StatelessWidget {
   /// Type of post ('found' or 'lost')
   final String postType;
 
-  ContactUnlockedPopup({
+  const ContactUnlockedPopup({
     super.key,
     required this.userName,
     this.postId,
     this.postType = 'found',
   });
 
-  void _deletePost() async {
+  void _markAsDone() async {
     try {
-      final foundRepository = getIt<FoundRepository>();
-      await foundRepository.deletePost(postId);
-      print('🗑️ ContactUnlockedPopup: Auto-deleted found post $postId');
+      if (postType == 'found') {
+        final foundRepository = getIt<FoundRepository>();
+        await foundRepository.markAsDone(postId);
+      } else {
+        final lostRepository = getIt<LostRepository>();
+        await lostRepository.markAsDone(postId);
+      }
+      print('✅ ContactUnlockedPopup: Marked $postType post $postId as done');
     } catch (e) {
-      print('❌ ContactUnlockedPopup: Failed to auto-delete post: $e');
+      print('❌ ContactUnlockedPopup: Failed to mark post as done: $e');
     }
   }
 
@@ -144,9 +151,9 @@ class ContactUnlockedPopup extends StatelessWidget {
                       child: _buildSuccessIcon(),
                     ),
                     const SizedBox(height: 32),
-                    // Contact Information Card - Fetch phone number from database
-                    FutureBuilder<String?>(
-                      future: _fetchPhoneNumber(),
+                    // Contact Information Card - Fetch details from database
+                    FutureBuilder<model.User?>(
+                      future: _fetchContactDetails(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return Container(
@@ -163,8 +170,8 @@ class ContactUnlockedPopup extends StatelessWidget {
                           print('❌ ContactUnlockedPopup: Snapshot error: ${snapshot.error}');
                         }
 
-                        final phoneNumber = snapshot.data ?? 'Phone number not available';
-                        return _buildContactCard(phoneNumber);
+                        final user = snapshot.data;
+                        return _buildContactCard(user);
                       },
                     ),
                     const SizedBox(height: 32),
@@ -195,9 +202,9 @@ class ContactUnlockedPopup extends StatelessWidget {
                     // Got it Button
                     InkWell(
                       onTap: () async {
-                        // Delete post when user clicks Got it
-                        if (postId != null && postType == 'found') {
-                          _deletePost();
+                        // Mark post as done when user clicks Got it
+                        if (postId != null) {
+                          _markAsDone();
                         }
                         
                         // We still try to refresh cubit if possible
@@ -416,8 +423,8 @@ class ContactUnlockedPopup extends StatelessWidget {
     );
   }
 
-  /// Fetch phone number from database using postId
-  Future<String?> _fetchPhoneNumber() async {
+  /// Fetch contact details from database using postId
+  Future<model.User?> _fetchContactDetails() async {
     if (postId == null) {
       print('⚠️ ContactUnlockedPopup: postId is null');
       return null;
@@ -441,15 +448,7 @@ class ContactUnlockedPopup extends StatelessWidget {
         }
         
         final userRepository = getIt<UserRepository>();
-        final user = await userRepository.getUserById(post.userId!);
-        
-        if (user == null) {
-          print('⚠️ ContactUnlockedPopup: User not found for ID ${post.userId}');
-          return null;
-        }
-        
-        print('✅ ContactUnlockedPopup: Found phone number: ${user.phoneNumber}');
-        return user.phoneNumber;
+        return await userRepository.getUserById(post.userId!);
       } else {
         final lostRepository = getIt<LostRepository>();
         final post = await lostRepository.getPostById(postId!);
@@ -465,24 +464,19 @@ class ContactUnlockedPopup extends StatelessWidget {
         }
         
         final userRepository = getIt<UserRepository>();
-        final user = await userRepository.getUserById(post.userId!);
-        
-        if (user == null) {
-          print('⚠️ ContactUnlockedPopup: User not found for ID ${post.userId}');
-          return null;
-        }
-        
-        print('✅ ContactUnlockedPopup: Found phone number: ${user.phoneNumber}');
-        return user.phoneNumber;
+        return await userRepository.getUserById(post.userId!);
       }
     } catch (e, stackTrace) {
-      print('❌ ContactUnlockedPopup: Error fetching phone number: $e');
+      print('❌ ContactUnlockedPopup: Error fetching contact details: $e');
       print('📚 ContactUnlockedPopup: Stack trace: $stackTrace');
       return null;
     }
   }
 
-  Widget _buildContactCard(String phoneNumber) {
+  Widget _buildContactCard(model.User? user) {
+    final phoneNumber = user?.phoneNumber ?? 'Phone number not available';
+    final photoUrl = user?.photo;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(17.27),
@@ -531,16 +525,32 @@ class ContactUnlockedPopup extends StatelessWidget {
                 Container(
                   width: 40,
                   height: 40,
+                  clipBehavior: Clip.antiAlias,
                   decoration: ShapeDecoration(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Icon(
-                    Icons.person_outline,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
+                  child: photoUrl != null && photoUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: photoUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Icon(
+                            Icons.person_outline,
+                            color: AppColors.textSecondary,
+                            size: 20,
+                          ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.person_outline,
+                            color: AppColors.textSecondary,
+                            size: 20,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.person_outline,
+                          color: AppColors.textSecondary,
+                          size: 20,
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

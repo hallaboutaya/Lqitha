@@ -1,107 +1,109 @@
-# 🏗️ Architecture & Design
+# 🏗️ Lqitha Architecture & Technical Design
 
-This document explains the technical design of the Lqitha project, focusing on the separation of concerns, data abstraction, and the backend/frontend integration patterns.
+This document provides a deep dive into the technical architecture of the Lqitha platform, including the data layer, backend integration, and the "LQITOU" verification flow.
 
 ---
 
-## 1. High-Level Overview
+## 1. System Overview
 
-Lqitha follows a **Client-Server Architecture** but retains the ability to run in a standalone **Local Mode**.
+Lqitha operates on a **Client-Server Architecture** with a unique **Dual-Database Adapter**. This allows developers to work offline using SQLite or connect to the production environment (Flask + Supabase) by flipping a single switch.
 
 ```mermaid
 graph TD
-    User[📱 User App] <-->|Cubit| BL[Business Logic Layer]
+    User[📱 Flutter App] <-->|Cubit| BL[Business Logic Layer]
     BL <-->|Repository Interface| Repo[Repository Layer]
     
     subgraph Data Layer
-        Repo -->|Switch| Remote[☁️ API Data Source]
+        Repo -->|Switch| API[☁️ API Data Source]
         Repo -->|Switch| Local[💾 Local SQLite Source]
     end
     
-    Remote <-->|HTTP/REST| Flask[🐍 Flask Backend]
-    Flask <-->|SQL| Supabase[(🗄️ PostgreSQL)]
-    Local <-->|SQL| SQLite[(📂 SQLite)]
+    API <-->|REST/JWT| Flask[🐍 Flask Backend]
+    Flask <-->|PostgreSQL| Supabase[(🗄️ Supabase)]
+    Local <-->|SQL| SQLite[(📂 SQLite File)]
 ```
+
+> [!NOTE]
+> The switching logic is controlled by `USE_API` in `lib/config/api_config.dart`.
 
 ---
 
 ## 2. Frontend Architecture (Flutter)
 
-The app uses **Clean Architecture** principles with **Cubit** for state management.
+The mobile app follows **Clean Architecture** principles, ensuring that UI components are decoupled from data sources.
 
-### **Directory Structure**
-```
-lib/
-├── config/          # API Config & Feature Flags
-├── cubits/          # State Management (Business Logic)
-├── data/            # Data Layer
-│   ├── models/      # Data Models (User, Post)
-│   ├── repositories/# Repository Implementations
-│   └── services/    # External Services (API Client, DB)
-├── screens/         # UI Pages
-└── widgets/         # Reusable UI Components
-```
+### **State Management: BLoC/Cubit**
+We use `flutter_bloc` for its predictability and testability. Each feature (Auth, Founds, Losts, Notifications) has its own Cubit.
+
+- **Initial State**: Loading or placeholder data.
+- **Action**: User triggers a search or post.
+- **Repository Call**: The Cubit requests data.
+- **Success/Error State**: UI reacts to the new state.
 
 ### **The Repository Pattern**
-This is the core architectural strength. The UI never talks to the API or Database directly. It talks to an **abstract repository**.
-
-**Why?**
-This allows us to switch between the Local SQLite database and the Remote API by changing a single boolean flag in `lib/config/api_config.dart`.
-
-*   `FoundRepository` (Base Class)
-    *   `LocalFoundRepository` (Implementation: Uses `sqflite`)
-    *   `ApiFoundRepository` (Implementation: Uses `http` to call Flask)
-
-**Dependency Injection:**
-We use `GetIt` (`service_locator.dart`) to bind the correct implementation at startup based on `ApiConfig.USE_API`.
+The UI interacts only with abstract repositories. At runtime, `GetIt` (Service Locator) provides either the `ApiRepository` or `LocalRepository` implementation.
 
 ---
 
-## 3. Backend Architecture (Flask)
+## 3. Database Schema
 
-The backend is built with **Flask** using the **Blueprint** pattern for modularity.
+Lqitha uses a unified schema across both SQLite and PostgreSQL.
 
-### **Structure**
-```
-flask_backend/
-├── app/
-│   ├── routes/        # API Endpoints (Auth, Posts, Admin)
-│   ├── services/      # Business Logic
-│   ├── utils/         # Helpers (Security, Validators)
-│   └── __init__.py    # App Factory
-├── run.py             # Entry Point
-└── tests/             # Pytest Suite
-```
+### **Core Tables**
 
-### **Security Layer**
-1.  **JWT (JSON Web Tokens)**: Used for stateless authentication. Every request to a protected route must include a valid Bearer token.
-2.  **Bcrypt**: Passwords are hashed with unique salts before storage.
-3.  **Input Validation**: All incoming data is rigorously validated (regex for emails, length checks) before touching the database.
+| Table | Purpose | Key Fields |
+|---|---|---|
+| `users` | Identity & Profiles | `email (unique)`, `password`, `role`, `points` |
+| `found_posts` | Items found | `photo`, `status (pending/approved)`, `user_id` |
+| `lost_posts` | Items reported lost | `photo`, `status`, `category`, `user_id` |
+| `notifications` | Engagement & Claims | `title`, `message`, `type`, `related_post_id` |
+| `transactions` | Gamification | `points`, `type`, `user_id`, `description` |
 
 ---
 
 ## 4. The "LQITOU" Flow (Claiming Logic)
 
-The "Claim" feature is a complex interaction:
+**LQITOU** is the core transaction of the app. It manages the interaction between a finder and an owner.
 
-1.  **User A** posts a "Found Item".
-2.  **User B** sees the item and recognizes it.
-3.  **User B** clicks "It's Mine!" (LQITOU).
-4.  **System Action**:
-    *   Sends a `POST /claim` request.
-    *   Backend verifies user identity.
-    *   Backend triggers a **Notification** to User A ("Someone claimed your item!").
-5.  **User A** receives the alert and can view User B's contact details to arrange a meetup.
+1.  **Discovery**: User A finds an item and posts it. Admin approves.
+2.  **Claim**: User B identifies their lost item and clicks **"LQITOU!"**.
+3.  **Notification**: The system triggers a Secure Notification to User A.
+4.  **Verification**: User A reviews User B's profile.
+5.  **Resolution**: Upon successful verification, contact details are exchanged, and points are awarded to the finder.
 
 ---
 
-## 5. Database Schema (Supabase/PostgreSQL)
+## 5. API Reference (Flask Backend)
 
-The database is normalized into 4 main tables:
+The backend provides a RESTful interface for all operations.
 
-*   **Users**: Stores credentials and profiles.
-*   **FoundPosts**: Items found by users.
-*   **LostPosts**: Items lost by users.
-*   **Notifications**: Alert system linking users and posts.
+### **Authentication**
+- `POST /auth/login`: Returns JWT and user profile.
+- `POST /auth/register`: Creates new user profile.
 
-*See [API_REFERENCE.md](API_REFERENCE.md) for the full schema definition.*
+### **Posts Management**
+- `GET /found-posts`: Returns approved found items.
+- `POST /found-posts`: Creates a new post (starts as `pending`).
+- `PUT /found-posts/<id>/status`: (Admin Only) Approves or rejects a post.
+
+### **Rewards & Notifications**
+- `GET /notifications`: Fetch latest alerts for current user.
+- `GET /rewards/leaderboard`: View top community contributors.
+
+> [!IMPORTANT]
+> All write operations require a valid `Authorization: Bearer <token>` header.
+
+---
+
+## 6. Gamification System
+
+| Action | Points | Rationale |
+|---|---|---|
+| **Submit Post** | +5 | Reward for being proactive. |
+| **Post Approved** | +10 | Reward for high-quality information. |
+| **Claim Item** | -20 | Cost to verify/unlock owner contact. |
+| **Successful Return** | +50 | Massive boost for honest behavior. |
+
+---
+
+*For detailed setup and environment configuration, see the [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md).*

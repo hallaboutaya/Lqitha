@@ -20,10 +20,16 @@ class NotificationService {
     if (_isInitialized) return;
 
     try {
+      // Skip FCM initialization on web platform - requires different setup
+      if (kIsWeb) {
+        AppLogger.i('🔔 Skipping FCM initialization on web (not supported yet)');
+        _isInitialized = true;
+        return;
+      }
+
       AppLogger.i('🔔 Initializing NotificationService...');
       
-      // Initialize Firebase (if not already initialized via DefaultFirebaseOptions)
-      // Note: Assuming google-services.json and GoogleService-Info.plist are correctly placed
+      // Initialize Firebase
       await Firebase.initializeApp();
 
       // Request permissions (especially for iOS)
@@ -35,14 +41,11 @@ class NotificationService {
       // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         AppLogger.i('📩 Foreground message received: ${message.notification?.title}');
-        // You can show a local notification here if needed
-        // For now, we'll just log it. The UI can also listen to a stream.
       });
 
       // Handle message opening when app is in background but not terminated
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         AppLogger.i('📬 App opened via notification: ${message.notification?.title}');
-        // Navigate to specifically the notifications page or related post
       });
 
       _isInitialized = true;
@@ -52,7 +55,8 @@ class NotificationService {
       await registerToken();
       
     } catch (e, stackTrace) {
-      AppLogger.e('❌ Failed to initialize NotificationService', e, stackTrace);
+      AppLogger.w('⚠️ FCM initialization failed (this is normal on web): $e');
+      _isInitialized = true; // Mark as initialized to prevent retry loops
     }
   }
 
@@ -77,6 +81,12 @@ class NotificationService {
   /// Get FCM token and register it with the backend.
   Future<void> registerToken() async {
     try {
+      // Skip on web
+      if (kIsWeb) {
+        AppLogger.d('ℹ️ Skipping FCM token registration on web');
+        return;
+      }
+
       final authService = getIt<AuthService>();
       if (!authService.isLoggedIn) {
         AppLogger.d('ℹ️ User not logged in, skipping FCM token registration.');
@@ -84,9 +94,7 @@ class NotificationService {
       }
 
       String? token;
-      if (kIsWeb) {
-        // Handle web FCM if needed
-      } else if (Platform.isIOS) {
+      if (Platform.isIOS) {
         token = await _fcm.getAPNSToken();
       }
       
@@ -98,9 +106,11 @@ class NotificationService {
         final userRepository = getIt<UserRepository>();
         await userRepository.updateFCMToken(authService.currentUserId, token);
         AppLogger.i('✅ FCM Token registered with backend.');
+      } else {
+        AppLogger.w('⚠️ Failed to obtain FCM token.');
       }
     } catch (e, stackTrace) {
-      AppLogger.e('❌ Error registering FCM token', e, stackTrace);
+      AppLogger.w('⚠️ Error registering FCM token: $e');
     }
   }
 }

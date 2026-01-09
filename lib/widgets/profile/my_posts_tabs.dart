@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
+import '../../core/utils/time_formatter.dart';
 import '../../models/profile_post_model.dart';
 import '../../data/models/found_post.dart';
 import '../../data/models/lost_post.dart';
@@ -99,16 +100,12 @@ class _MyPostsTabsState extends State<MyPostsTabs> {
     // Format date
     String dateStr = 'Unknown';
     if (post.createdAt != null) {
-      try {
-        final createdDate = DateTime.parse(post.createdAt!);
-        dateStr = timeago.format(createdDate);
-      } catch (e) {
-        dateStr = post.createdAt!;
-      }
+      dateStr = TimeFormatter.formatTimeAgoFromString(post.createdAt, l10n);
+      if (dateStr.isEmpty) dateStr = post.createdAt!;
     }
     
     return ProfilePost(
-      title: '$postType: $category - ${description.length > 40 ? description.substring(0, 40) + '...' : description}',
+      title: '$postType: $category - ${description.length > 40 ? '${description.substring(0, 40)}...' : description}',
       location: post.location ?? 'Unknown location',
       imageUrl: post.photo ?? 'https://via.placeholder.com/400',
       status: uiStatus,

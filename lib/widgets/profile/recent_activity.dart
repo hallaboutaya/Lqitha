@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hopefully_last/l10n/app_localizations.dart';
+import '../../core/utils/time_formatter.dart';
 import '../../data/repositories/rewards_repository.dart';
 import '../../data/models/point_transaction.dart';
 import '../../services/auth_service.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class RecentActivity extends StatefulWidget {
-  RecentActivity({super.key});
+  const RecentActivity({super.key});
 
   @override
   State<RecentActivity> createState() => _RecentActivityState();
@@ -124,7 +124,7 @@ class _RecentActivityState extends State<RecentActivity> {
 
   Widget _activityTile(PointTransaction transaction, AppLocalizations l10n) {
     final isPositive = transaction.points > 0;
-    final timeAgo = timeago.format(DateTime.parse(transaction.createdAt));
+    final timeAgo = TimeFormatter.formatTimeAgoFromString(transaction.createdAt, l10n);
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),

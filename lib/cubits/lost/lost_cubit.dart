@@ -53,14 +53,20 @@ class LostCubit extends Cubit<LostState> {
           .map((u) => u.postId)
           .toSet();
 
-      // Cache posts for client-side search/filter
-      _allPosts = posts;
+      // Filter out unlocked posts from the feed
+      final visiblePosts = posts.where((post) {
+        final postIdStr = post.id.toString();
+        return !unlockedIds.contains(postIdStr);
+      }).toList();
 
-      // Emit loaded state with posts and unlock info
+      // Cache ALL posts for client-side search/filter
+      _allPosts = visiblePosts;
+
+      // Emit loaded state with filtered posts and unlock info
       emit(LostLoaded(
-        posts: posts,
+        posts: visiblePosts,
         unlockedPostIds: unlockedIds,
-        message: posts.isEmpty ? 'No lost items yet' : null,
+        message: visiblePosts.isEmpty ? 'No lost items yet' : null,
       ));
     } catch (e) {
       // Emit error state with user-friendly message
@@ -214,6 +220,37 @@ class LostCubit extends Cubit<LostState> {
       } catch (e) {
         print('Error unlocking lost post in cubit: $e');
       }
+    }
+  }
+
+  /// Filter posts by category.
+  void filterByCategory(String? category) {
+    try {
+      final unlocks = state is LostLoaded ? (state as LostLoaded).unlockedPostIds : <String>{};
+      
+      if (category == null || category.isEmpty) {
+        final visiblePosts = _allPosts.where((post) {
+          final postIdStr = post.id.toString();
+          return !unlocks.contains(postIdStr);
+        }).toList();
+        emit(LostLoaded(posts: visiblePosts, unlockedPostIds: unlocks));
+        return;
+      }
+
+      final filteredPosts = _allPosts.where((post) {
+        final postIdStr = post.id.toString();
+        final categoryMatch = post.category?.toLowerCase().contains(category.toLowerCase()) ?? false;
+        return categoryMatch && !unlocks.contains(postIdStr);
+      }).toList();
+
+      emit(LostLoaded(
+        posts: filteredPosts,
+        unlockedPostIds: unlocks,
+        message: filteredPosts.isEmpty ? 'No items in this category' : null,
+      ));
+    } catch (e) {
+      emit(LostError('Error filtering posts'));
+      print('Error in filterByCategory: $e');
     }
   }
 }

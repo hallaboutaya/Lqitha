@@ -16,6 +16,7 @@ class ApiNotificationRepository extends NotificationRepository {
   Future<Database> get _db async => throw UnimplementedError('Use API methods instead of _db');
 
   /// Fetch all notifications for a specific user from API.
+  @override
   Future<List<NotificationModel>> getAllNotifications(dynamic userId) async {
     try {
       print('🗄️  ApiNotificationRepository: Fetching notifications for userId=$userId');
@@ -38,6 +39,7 @@ class ApiNotificationRepository extends NotificationRepository {
   }
 
   /// Fetch only unread notifications for a specific user from API.
+  @override
   Future<List<NotificationModel>> getUnreadNotifications(dynamic userId) async {
     try {
       final response = await _apiClient.get(
@@ -59,6 +61,7 @@ class ApiNotificationRepository extends NotificationRepository {
   }
 
   /// Mark a single notification as read via API.
+  @override
   Future<void> markAsRead(dynamic notificationId) async {
     try {
       await _apiClient.put(
@@ -75,6 +78,7 @@ class ApiNotificationRepository extends NotificationRepository {
   }
 
   /// Mark all notifications as read for a specific user via API.
+  @override
   Future<int> markAllAsRead(dynamic userId) async {
     try {
       final response = await _apiClient.put(
@@ -92,6 +96,7 @@ class ApiNotificationRepository extends NotificationRepository {
   }
 
   /// Insert a new notification via API.
+  @override
   Future<dynamic> insertNotification(NotificationModel notification) async {
     try {
       final response = await _apiClient.post(
@@ -108,6 +113,7 @@ class ApiNotificationRepository extends NotificationRepository {
   }
 
   /// Get the count of unread notifications for a user from API.
+  @override
   Future<int> getUnreadCount(dynamic userId) async {
     try {
       final response = await _apiClient.get(
@@ -123,6 +129,7 @@ class ApiNotificationRepository extends NotificationRepository {
   }
 
   /// Get notifications by type for a user from API.
+  @override
   Future<List<NotificationModel>> getNotificationsByType(
     dynamic userId,
     String type,

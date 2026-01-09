@@ -22,6 +22,7 @@ import '../../cubits/lost/lost_cubit.dart';
 import '../../cubits/lost/lost_state.dart';
 import '../../services/service_locator.dart';
 import '../../data/repositories/user_repository.dart';
+import '../../widgets/dialogs/filter_dialog.dart';
 
 class LostsPage extends StatefulWidget {
   /// Current bottom navigation index (passed from MainNavigation)
@@ -114,7 +115,14 @@ class _LostsPageState extends State<LostsPage> {
                       _lostCubit.searchPosts(value);
                     },
                     onFilterTap: () {
-                      // Handle filter tap
+                      showDialog(
+                        context: context,
+                        builder: (context) => FilterDialog(
+                          onApplyFilter: (category) {
+                            _lostCubit.filterByCategory(category);
+                          },
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -136,7 +144,7 @@ class _LostsPageState extends State<LostsPage> {
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () => _lostCubit.loadApprovedPosts(),
-                                child: const Text('Retry'),
+                                child: Text(AppLocalizations.of(context)!.retry),
                               ),
                             ],
                           ),
@@ -149,9 +157,9 @@ class _LostsPageState extends State<LostsPage> {
                         if (posts.isEmpty) {
                           return Center(
                             child: Text(
-                              state.message ?? 'No lost items yet',
-                              style: const TextStyle(color: AppColors.textSecondary),
-                            ),
+                                state.message ?? AppLocalizations.of(context)!.noLostItemsYet,
+                                style: const TextStyle(color: AppColors.textSecondary),
+                              ),
                           );
                         }
                         

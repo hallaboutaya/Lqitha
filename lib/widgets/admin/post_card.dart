@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:hopefully_last/l10n/app_localizations.dart';
+import '../../core/utils/time_formatter.dart';
 
 class PostCard extends StatelessWidget {
   final dynamic id;
@@ -15,9 +15,10 @@ class PostCard extends StatelessWidget {
   final String? category;
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final bool showActions; // Whether to show approve/reject buttons
 
   const PostCard({
-    Key? key,
+    super.key,
     required this.id,
     required this.type,
     this.photo,
@@ -30,7 +31,8 @@ class PostCard extends StatelessWidget {
     this.category,
     required this.onApprove,
     required this.onReject,
-  }) : super(key: key);
+    this.showActions = true, // Default to true for backwards compatibility
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +104,7 @@ class PostCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            _formatTime(createdAt),
+                            _formatTime(context, createdAt),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -152,53 +154,55 @@ class PostCard extends StatelessWidget {
                   Wrap(spacing: 8, children: [_buildTag(category!)]),
                 ],
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: onApprove,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                // Only show action buttons if showActions is true
+                if (showActions)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: onApprove,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.check, size: 18),
-                            const SizedBox(width: 8),
-                            Text(AppLocalizations.of(context)!.approve),
-                          ],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.check, size: 18),
+                              const SizedBox(width: 8),
+                              Text(AppLocalizations.of(context)!.approve),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: onReject,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: onReject,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.close, size: 18),
-                            const SizedBox(width: 8),
-                            Text(AppLocalizations.of(context)!.reject),
-                          ],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.close, size: 18),
+                              const SizedBox(width: 8),
+                              Text(AppLocalizations.of(context)!.reject),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -218,13 +222,7 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  String _formatTime(String? isoTime) {
-    if (isoTime == null) return '';
-    try {
-      final date = DateTime.parse(isoTime);
-      return timeago.format(date, locale: 'en_short');
-    } catch (e) {
-      return '';
-    }
+  String _formatTime(BuildContext context, String? isoTime) {
+    return TimeFormatter.formatTimeAgoFromString(isoTime, AppLocalizations.of(context)!);
   }
 }

@@ -72,7 +72,8 @@ class FoundItemCard extends StatelessWidget {
     
     return BlocBuilder<FoundCubit, FoundState>(
       builder: (context, state) {
-        final isUnlocked = state is FoundLoaded && (state.isUnlocked(postId.toString()) || postOwnerId == currentUserId);
+        final isPostOwner = postOwnerId == currentUserId;
+        final isUnlocked = state is FoundLoaded && (state.isUnlocked(postId.toString()) || isPostOwner);
 
         return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -328,71 +329,96 @@ class FoundItemCard extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 12),
-                // LQitha Button
-                InkWell(
-                  onTap: () {
-                    final foundCubit = context.read<FoundCubit>();
-                    
-                    if (isUnlocked) {
-                      // Already unlocked, show contact info directly
+                // LQitha Button - Only show if not yours
+                if (!isPostOwner) ...[
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () {
+                      final foundCubit = context.read<FoundCubit>();
+                      
+                      if (isUnlocked) {
+                        // Already unlocked, show contact info directly
+                        showDialog(
+                          context: context,
+                          builder: (dialogContext) => BlocProvider.value(
+                            value: foundCubit,
+                            child: ContactUnlockedPopup(
+                              userName: userName,
+                              postId: postId,
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
                       showDialog(
                         context: context,
                         builder: (dialogContext) => BlocProvider.value(
                           value: foundCubit,
-                          child: ContactUnlockedPopup(
+                          child: PaymentPopup(
                             userName: userName,
+                            itemTitle: description,
                             postId: postId,
+                            postType: 'found',
                           ),
                         ),
                       );
-                      return;
-                    }
-
-                    showDialog(
-                      context: context,
-                      builder: (dialogContext) => BlocProvider.value(
-                        value: foundCubit,
-                        child: PaymentPopup(
-                          userName: userName,
-                          itemTitle: description,
-                          postId: postId,
-                          postType: 'found',
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 48,
+                      decoration: ShapeDecoration(
+                        color: isUnlocked ? Colors.green : AppColors.primaryPurple,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
+                        shadows: const [
+                          BoxShadow(
+                            color: AppColors.shadowBlack,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                            spreadRadius: -2,
+                          ),
+                          BoxShadow(
+                            color: AppColors.shadowBlack,
+                            blurRadius: 6,
+                            offset: Offset(0, 4),
+                            spreadRadius: -1,
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 48,
-                    decoration: ShapeDecoration(
-                      color: isUnlocked ? Colors.green : AppColors.primaryPurple,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      shadows: const [
-                        BoxShadow(
-                          color: AppColors.shadowBlack,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                          spreadRadius: -2,
+                      child: Center(
+                        child: Text(
+                          isUnlocked ? 'View Contact' : AppLocalizations.of(context)!.lqitha,
+                          style: AppTextStyles.buttonText,
                         ),
-                        BoxShadow(
-                          color: AppColors.shadowBlack,
-                          blurRadius: 6,
-                          offset: Offset(0, 4),
-                          spreadRadius: -1,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        isUnlocked ? 'View Contact' : AppLocalizations.of(context)!.lqitha,
-                        style: AppTextStyles.buttonText,
                       ),
                     ),
                   ),
-                ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  // Show "Your Post" placeholder or manage button
+                  Container(
+                    width: double.infinity,
+                    height: 48,
+                    decoration: ShapeDecoration(
+                      color: Colors.grey.withOpacity(0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Your Post',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

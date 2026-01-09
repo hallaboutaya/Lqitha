@@ -88,7 +88,8 @@ class LostItemCard extends StatelessWidget {
 
     return BlocBuilder<LostCubit, LostState>(
       builder: (context, state) {
-        final isUnlocked = state is LostLoaded && (state.isUnlocked(postId.toString()) || postOwnerId == currentUserId);
+        final isPostOwner = postOwnerId == currentUserId;
+        final isUnlocked = state is LostLoaded && (state.isUnlocked(postId.toString()) || isPostOwner);
 
         return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -367,77 +368,88 @@ class LostItemCard extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 12),
-                // LQitou Button
-                InkWell(
-                  onTap: () {
-                    final lostCubit = context.read<LostCubit>();
-                    
-                    if (isUnlocked) {
-                      // Already unlocked, show contact info directly
-                      // Reuse ContactUnlockedPopup since it just shows user info
-                      showDialog(
-                        context: context,
-                        builder: (dialogContext) => BlocProvider.value(
-                          value: context.read<LostCubit>(),
-                          child: ContactUnlockedPopup(
-                            userName: userName,
-                            postId: postId,
-                            postType: 'lost',
+                // LQitou Button - Only show if not yours
+                if (!isPostOwner) ...[
+                  const SizedBox(height: 12),
+                  InkWell(
+                    onTap: () {
+                      final lostCubit = context.read<LostCubit>();
+                      
+                      if (isUnlocked) {
+                        // Already unlocked, show contact info directly
+                        showDialog(
+                          context: context,
+                          builder: (dialogContext) => BlocProvider.value(
+                            value: context.read<LostCubit>(),
+                            child: ContactUnlockedPopup(
+                              userName: userName,
+                              postId: postId,
+                              postType: 'lost',
+                            ),
                           ),
-                        ),
-                      );
-                      return;
-                    }
+                        );
+                        return;
+                      }
 
-                    // For lost posts, the "LQitou" flow usually means the finder is reporting it.
-                    // But if it's already "found" by someone else, we might want to "Pay" to see contact.
-                    // Actually, the user's rule says: "When user taps 'LQITHA / LQITOU': Simulate payment success"
-                    
-                    showDialog(
-                      context: context,
-                      builder: (dialogContext) => BlocProvider.value(
-                        value: lostCubit,
-                        child: PaymentPopup(
-                          userName: userName,
-                          itemTitle: description,
-                          postId: postId,
-                          postType: 'lost',
+                      // For lost posts, clicking "Lqitha" means the finder is reporting they found it
+                      // This should notify the owner, NOT show a payment popup
+                      _showFoundItemConfirmation(context);
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 48,
+                      decoration: ShapeDecoration(
+                        color: isUnlocked ? Colors.green : AppColors.primaryOrange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
+                        shadows: const [
+                          BoxShadow(
+                            color: AppColors.shadowBlack,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                            spreadRadius: -2,
+                          ),
+                          BoxShadow(
+                            color: AppColors.shadowBlack,
+                            blurRadius: 6,
+                            offset: Offset(0, 4),
+                            spreadRadius: -1,
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 48,
-                    decoration: ShapeDecoration(
-                      color: isUnlocked ? Colors.green : AppColors.primaryOrange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      shadows: const [
-                        BoxShadow(
-                          color: AppColors.shadowBlack,
-                          blurRadius: 4,
-                          offset: Offset(0, 2),
-                          spreadRadius: -2,
+                      child: Center(
+                        child: Text(
+                          isUnlocked ? 'View Contact' : AppLocalizations.of(context)!.lqitou,
+                          style: AppTextStyles.buttonText,
                         ),
-                        BoxShadow(
-                          color: AppColors.shadowBlack,
-                          blurRadius: 6,
-                          offset: Offset(0, 4),
-                          spreadRadius: -1,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        isUnlocked ? 'View Contact' : AppLocalizations.of(context)!.lqitou,
-                        style: AppTextStyles.buttonText,
                       ),
                     ),
                   ),
-                ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  // Show "Your Post" placeholder
+                  Container(
+                    width: double.infinity,
+                    height: 48,
+                    decoration: ShapeDecoration(
+                      color: Colors.grey.withOpacity(0.1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Your Post',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -528,10 +540,10 @@ class LostItemCard extends StatelessWidget {
         createdAt: DateTime.now().toIso8601String(),
         userId: currentUserId, // The person who found it
       );
-      await foundRepository.insertPost(foundPost);
+      final newFoundId = await foundRepository.insertPost(foundPost);
       
-      // 4. Delete the lost post
-      await lostRepository.deletePost(postId);
+      // 4. Mark the lost post as done (resolved)
+      await lostRepository.markAsDone(postId);
       
       // 5. Create notification for the original owner
       print('🔔 Creating notification for user ID: $postOwnerId');
@@ -540,7 +552,7 @@ class LostItemCard extends StatelessWidget {
       final notification = NotificationModel(
         title: l10n.someoneFoundYourItem,
         message: l10n.goodNewsSomeoneFound(description),
-        relatedPostId: postId,
+        relatedPostId: newFoundId, // USE THE NEW FOUND POST ID
         type: 'item_found',
         isRead: false,
         createdAt: DateTime.now().toIso8601String(),
@@ -548,7 +560,7 @@ class LostItemCard extends StatelessWidget {
       );
       
       final notificationId = await notificationRepository.insertNotification(notification);
-      print('🔔 Notification created with ID: $notificationId for user: $postOwnerId');
+      print('🔔 Notification created with ID: $notificationId for user: $postOwnerId with relatedPostId: $newFoundId');
       
       // 6. Refresh both Lost and Found cubits to update UI
       if (context.mounted) {

@@ -53,6 +53,9 @@ class AdminCubit extends Cubit<AdminState> {
         } else if (tab == 'rejected') {
           lostPosts = await repository.getRejectedLostPosts();
           foundPosts = await repository.getRejectedFoundPosts();
+        } else if (tab == 'resolved') {
+          lostPosts = await repository.getDoneLostPosts();
+          foundPosts = await repository.getDoneFoundPosts();
         }
 
         emit(

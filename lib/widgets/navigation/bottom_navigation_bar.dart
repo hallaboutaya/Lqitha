@@ -13,6 +13,7 @@
 /// between pages by tapping these tabs.
 library;
 import 'package:flutter/material.dart';
+import 'package:hopefully_last/l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 
@@ -31,6 +32,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.only(top: 1.17),
       decoration: ShapeDecoration(
@@ -58,28 +60,28 @@ class CustomBottomNavigationBar extends StatelessWidget {
             children: [
               _buildNavItem(
                 icon: Icons.search,
-                label: 'Founds',
+                label: l10n.founds,
                 index: 0,
                 isActive: currentIndex == 0,
                 onTap: () => onTap(0),
               ),
               _buildNavItem(
                 icon: Icons.visibility_off,
-                label: 'Losts',
+                label: l10n.losts,
                 index: 1,
                 isActive: currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               _buildNavItem(
                 icon: Icons.notifications_outlined,
-                label: 'Notifications',
+                label: l10n.notifications,
                 index: 2,
                 isActive: currentIndex == 2,
                 onTap: () => onTap(2),
               ),
               _buildNavItem(
                 icon: Icons.person_outline,
-                label: 'Profile',
+                label: l10n.profile,
                 index: 3,
                 isActive: currentIndex == 3,
                 onTap: () => onTap(3),

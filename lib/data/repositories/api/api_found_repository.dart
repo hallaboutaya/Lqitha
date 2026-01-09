@@ -48,6 +48,7 @@ class ApiFoundRepository extends FoundRepository {
   }
 
   /// Search for approved found posts matching the query.
+  @override
   Future<List<FoundPost>> searchPosts(String query) async {
     try {
       final response = await _apiClient.get(
@@ -123,6 +124,7 @@ class ApiFoundRepository extends FoundRepository {
   /// Update an existing found post via API.
   /// 
   /// Returns the number of rows affected (1 on success).
+  @override
   Future<int> updatePost(FoundPost post) async {
     try {
       if (post.id == null) {
@@ -232,6 +234,7 @@ class ApiFoundRepository extends FoundRepository {
   }
 
   /// Get all found posts from API (admin only).
+  @override
   Future<List<FoundPost>> getAllPosts() async {
     try {
       final response = await _apiClient.get(
@@ -242,6 +245,21 @@ class ApiFoundRepository extends FoundRepository {
       return postsJson.map((json) => FoundPost.fromMap(json)).toList();
     } catch (e) {
       print('Error fetching all found posts from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Mark a found post as done (resolved/returned) via API.
+  @override
+  Future<int> markAsDone(dynamic postId) async {
+    try {
+      await _apiClient.put(
+        '${ApiConfig.FOUND_POSTS}/$postId/status',
+        body: {'status': 'done'},
+      );
+      return 1; // Success
+    } catch (e) {
+      print('Error marking found post as done via API: $e');
       rethrow;
     }
   }

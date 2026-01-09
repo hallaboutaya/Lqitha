@@ -165,6 +165,101 @@
   "enterFullName": "أدخل اسمك الكامل",
   "enterYourEmail": "أدخل بريدك الإلكتروني",
   "enterPhoneNumber": "أدخل رقم هاتفك",
-  "phoneNumber": "رقم الهاتف"
+  "phoneNumber": "رقم الهاتف",
+  "trustPoints": "نقاط الثقة",
+  "someone": "شخص ما",
+  "userWithId": "مستخدم {id}",
+  "@userWithId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownTime": "وقت غير معروف",
+  "justNow": "الآن",
+  "secondsAgo": "منذ {count} ثانية",
+  "@secondsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minuteAgo": "{count, plural, =1{دقيقة واحدة} =2{دقيقتان} other{منذ {count} دقيقة}}",
+  "@minuteAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourAgo": "{count, plural, =1{ساعة واحدة} =2{ساعتان} other{منذ {count} ساعة}}",
+  "@hourAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgo": "{count, plural, =1{يوم واحد} =2{يومان} other{منذ {count} يوم}}",
+  "@dayAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekAgo": "{count, plural, =1{أسبوع واحد} =2{أسبوعان} other{منذ {count} أسبوع}}",
+  "@weekAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthAgo": "{count, plural, =1{شهر واحد} =2{شهران} other{منذ {count} شهر}}",
+  "@monthAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yearAgo": "{count, plural, =1{سنة واحدة} =2{سنتان} other{منذ {count} سنة}}",
+  "@yearAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNotificationsYet": "لا توجد إشعارات بعد",
+  "postIdNotAvailable": "معرف المنشور غير متوفر",
+  "noFoundItemsYet": "لا توجد أشياء موجودة بعد",
+  "noLostItemsYet": "لا توجد أشياء مفقودة بعد",
+  "userInsights": "رؤى المستخدمين",
+  "avgPoints": "متوسط النقاط",
+  "successRate": "نسبة النجاح",
+  "performanceRankings": "تصنيفات الأداء",
+  "searchUsersByName": "البحث عن المستخدمين بالاسم...",
+  "posts": "المنشورات",
+  "denied": "المرفوضة",
+  "resolved": "المستردة",
+  "success": "النجاح",
+  "noUsersFoundMatchingSearch": "لم يتم العثور على مستخدمين يطابقون بحثك",
+  "errorLoadingProfile": "خطأ في تحميل الملف الشخصي",
+  "notLoggedIn": "لم يتم تسجيل الدخول",
+  "user": "مستخدم",
+  "points": "النقاط",
+  "founds": "الموجودات",
+  "losts": "المفقودات",
+  "profile": "الملف الشخصي",
+  "appVersion": "إصدار التطبيق",
+  "developers": "المطورون",
+  "lqithaDescription": "لقيثة هي منصة مجتمعية لمساعدة الناس في العثور على أشيائهم المفقودة وإعادة الأشياء الموجودة.",
+  "pushNotifications": "إشعارات الهاتف",
+  "emailAlerts": "تنبيهات البريد الإلكتروني",
+  "settingsSaved": "تم حفظ الإعدادات"
 }
 

@@ -310,7 +310,7 @@
   "@pendingReview": {
     "description": "Stat card title for pending posts"
   },
-  "approvedToday": "Approved Today",
+  "approvedToday": "Total Approved",
   "@approvedToday": {
     "description": "Stat card title for approved posts today"
   },
@@ -418,6 +418,101 @@
   "enterFullName": "Enter your full name",
   "enterYourEmail": "Enter your email",
   "enterPhoneNumber": "Enter your phone number",
-  "phoneNumber": "Phone Number"
+  "phoneNumber": "Phone Number",
+  "trustPoints": "Trust Points",
+  "someone": "Someone",
+  "userWithId": "User {id}",
+  "@userWithId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownTime": "Unknown time",
+  "justNow": "Just now",
+  "secondsAgo": "{count} seconds ago",
+  "@secondsAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minuteAgo": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@minuteAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hourAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@hourAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@dayAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekAgo": "{count, plural, =1{1 week ago} other{{count} weeks ago}}",
+  "@weekAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthAgo": "{count, plural, =1{1 month ago} other{{count} months ago}}",
+  "@monthAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yearAgo": "{count, plural, =1{1 year ago} other{{count} years ago}}",
+  "@yearAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNotificationsYet": "No notifications yet",
+  "postIdNotAvailable": "Post ID not available",
+  "noFoundItemsYet": "No found items yet",
+  "noLostItemsYet": "No lost items yet",
+  "userInsights": "User Insights",
+  "avgPoints": "Avg Points",
+  "successRate": "Success Rate",
+  "performanceRankings": "Performance Rankings",
+  "searchUsersByName": "Search users by name...",
+  "posts": "Posts",
+  "denied": "Denied",
+  "resolved": "Resolved",
+  "success": "Success",
+  "noUsersFoundMatchingSearch": "No users found matching your search",
+  "errorLoadingProfile": "Error loading profile",
+  "notLoggedIn": "Not logged in",
+  "user": "User",
+  "points": "Points",
+  "founds": "Founds",
+  "losts": "Losts",
+  "profile": "Profile",
+  "appVersion": "App Version",
+  "developers": "Developers",
+  "lqithaDescription": "Lqitha is a community-driven platform to help people find lost items and return found ones.",
+  "pushNotifications": "Push Notifications",
+  "emailAlerts": "Email Alerts",
+  "settingsSaved": "Settings saved"
 }
 

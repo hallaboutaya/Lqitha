@@ -10,9 +10,12 @@ import '../../services/service_locator.dart';
 import '../../services/auth_service.dart';
 import '../../data/repositories/user_repository.dart';
 import '../auth/login/login_screen.dart';
+import 'user_management_screen.dart';
+import '../../cubits/admin/user_management_cubit.dart';
+import '../../theme/app_colors.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({Key? key}) : super(key: key);
+  const AdminDashboardScreen({super.key});
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -145,19 +148,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Row(
           children: [
             Expanded(
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      scopedContext,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider(
+                          create: (context) => getIt<UserManagementCubit>()..loadUsers(),
+                          child: const UserManagementScreen(),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryPurple,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'User Insights',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: Text(l10n.adminPanel),
               ),
-            ),
             const SizedBox(width: 12),
             OutlinedButton(
               onPressed: () {
@@ -325,6 +345,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 description: post.description,
                 location: post.location,
                 category: post.category,
+                showActions: state.currentTab == 'pending', // Only show buttons for pending posts
                 onApprove: () async {
                   final l10n = AppLocalizations.of(scopedContext)!;
                   await scopedContext.read<AdminCubit>().approvePost(postId, 'found');
@@ -378,6 +399,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 description: post.description,
                 location: post.location,
                 category: post.category,
+                showActions: state.currentTab == 'pending', // Only show buttons for pending posts
                 onApprove: () async {
                   final l10n = AppLocalizations.of(scopedContext)!;
                   await scopedContext.read<AdminCubit>().approvePost(postId, 'lost');

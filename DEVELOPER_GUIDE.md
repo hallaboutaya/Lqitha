@@ -1,74 +1,88 @@
-# 💻 Developer Guide
+# 🛠️ Lqitha Developer Guide
 
-## ⚙️ Environment Setup
-
-### Prerequisites
-*   **Flutter**: 3.x+
-*   **Python**: 3.8+
-*   **Supabase Account** (For remote DB)
-
-### 1. Setting up the Backend
-1.  Navigate to `flask_backend/`.
-2.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  Configure Environment:
-    *   Copy `.env.example` to `.env`.
-    *   Fill in your Supabase credentials.
-4.  Run tests to ensure system integrity:
-    ```bash
-    pytest tests/test_unit.py
-    ```
-5.  Start the server:
-    ```bash
-    python run.py
-    ```
-
-### 2. Setting up the Frontend
-1.  Open `lib/config/api_config.dart`.
-2.  Set `USE_API = true` to use your Flask server, or `false` to use local SQLite.
-3.  Run the app:
-    ```bash
-    flutter run
-    ```
+This guide contains everything you need to set up, develop, and test the Lqitha platform.
 
 ---
 
-## 🧪 Testing
+## 1. Local Environment Setup
 
-### Backend Tests
-We use **Pytest**.
-*   **Unit Tests**: Located in `flask_backend/tests/`. Run with `pytest`.
-*   **Verification**: Run `python verify_tests.py` for a quick pass/fail check.
+### **Prerequisites**
+- Flutter SDK (Latest Stable)
+- Python 3.9+
+- Supabase Account (for remote mode)
+- Android Studio / VS Code with Flutter Extension
 
-### Frontend Tests
-*   Run `flutter test` to execute widget/unit tests.
+### **Frontend Setup**
+1. Clone the repository.
+2. Run `flutter pub get` to install dependencies.
+3. Configure `lib/config/api_config.dart`:
+   - Set `USE_API = false` for local SQLite development.
+   - Set `USE_API = true` for remote Flask/Supabase development.
+
+### **Backend Setup (Flask)**
+1. Navigate to `flask_backend/`.
+2. Create a virtual environment: `python -m venv venv`.
+3. Activate it: `source venv/bin/activate` (Mac/Linux) or `venv\Scripts\activate` (Windows).
+4. Install requirements: `pip install -r requirements.txt`.
+5. Create a `.env` file from `.env.example`:
+   ```env
+   SUPABASE_URL=your_url
+   SUPABASE_KEY=your_key
+   SECRET_KEY=your_jwt_secret
+   ```
+6. Start the server: `python run.py`.
 
 ---
 
-## 🐛 Debugging Guide
+## 2. Testing Strategy
 
-### "Connection Refused" (Frontend)
-*   **Cause**: App cannot hit `localhost:5000`.
-*   **Fix**:
-    *   **Android Emulator**: Use `10.0.2.2:5000` instead of `localhost`.
-    *   **Physical Device**: Use your PC's LAN IP (e.g., `192.168.1.X:5000`).
-    *   Update `API_BASE_URL` in `lib/config/api_config.dart`.
+### **Frontend Tests**
+We use `flutter_test` and `bloc_test` for verifying our business logic.
+```bash
+# Run all Flutter tests
+flutter test
+```
 
-### "Token Expired" / 401 Error
-*   **Cause**: JWT is old.
-*   **Fix**: Log out and Log in again.
-
-### "Database Error"
-*   **Cause**: Supabase credentials invalid or table missing.
-*   **Fix**: Check `.env` and Supabase dashboard. Ensure tables (`users`, `found_posts`, etc.) exist.
+### **Backend Tests**
+We use `pytest` to verify API endpoints and database integrity.
+```bash
+cd flask_backend
+pytest
+```
 
 ---
 
-## 🤝 Contribution Workflow
+## 3. Debugging & Troubleshooting
 
-1.  **Branching**: Create a feature branch (`feat/login-ui`).
-2.  **Code**: Implement changes.
-3.  **Test**: Verified with `pytest` (backend) or manual run (frontend).
-4.  **Merge**: Submit Pull Request.
+### **Common Issues**
+- **Connection Refused**: Ensure the Flask server is running and your `API_BASE_URL` in `api_config.dart` matches your local IP (use `10.0.2.2:5000` for Android emulators).
+- **SQLite Database Locked**: Ensure only one instance of the app/tool is accessing the `.db` file.
+- **JWT Unauthorized**: Your session might have expired. Log out and log back in to refresh your token.
+
+### **Debug Mode Features**
+Lqitha includes a **Database Seeder** that automatically populates the local SQLite database with test users and items when you first launch the app in local mode.
+
+---
+
+## 4. Contributing Rules
+
+1.  **Feature Branches**: Always create a new branch for your feature (`feature/your-feature`).
+2.  **Linting**: Run `flutter analyze` before committing.
+3.  **Documentation**: If you change an API endpoint, update the corresponding section in `ARCHITECTURE.md`.
+4.  **Pull Requests**: Ensure all tests pass before submitting a PR.
+
+---
+
+## 5. Deployment
+
+### **Backend**
+The Flask app can be deployed to any WSGI-compliant server (Heroku, DigitalOcean, etc.). Ensure all environment variables from `.env` are set in your production environment.
+
+### **Frontend**
+- **Android**: `flutter build apk --release`
+- **iOS**: `flutter build ios --release`
+- **Web**: `flutter build web`
+
+---
+
+*Need help? Open an issue or contact the project maintainers.*

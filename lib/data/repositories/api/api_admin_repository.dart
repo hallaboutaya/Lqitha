@@ -1,8 +1,11 @@
 import '../../models/found_post.dart';
 import '../../models/lost_post.dart';
+import '../../models/user_stats.dart';
 import '../admin_repository.dart';
 import 'api_found_repository.dart';
 import 'api_lost_repository.dart';
+import '../../../services/api_client.dart';
+import '../../../config/api_config.dart';
 
 /// API implementation of AdminRepository.
 /// 
@@ -11,6 +14,7 @@ import 'api_lost_repository.dart';
 class ApiAdminRepository extends AdminRepository {
   final ApiFoundRepository _foundRepository = ApiFoundRepository();
   final ApiLostRepository _lostRepository = ApiLostRepository();
+  final ApiClient _apiClient = ApiClient();
 
   // ==================== FOUND POSTS ADMIN METHODS ====================
 
@@ -105,6 +109,31 @@ class ApiAdminRepository extends AdminRepository {
   @override
   Future<List<FoundPost>> getRejectedFoundPosts() async {
     return await _foundRepository.getPostsByStatus('rejected');
+  }
+
+  @override
+  Future<List<LostPost>> getDoneLostPosts() async {
+    return await _lostRepository.getPostsByStatus('done');
+  }
+
+  @override
+  Future<List<FoundPost>> getDoneFoundPosts() async {
+    return await _foundRepository.getPostsByStatus('done');
+  }
+
+  @override
+  Future<List<UserStats>> getAllUserStats() async {
+    try {
+      final response = await _apiClient.get('${ApiConfig.ADMIN}/user-stats');
+      if (response['success'] == true) {
+        final List<dynamic> usersJson = response['users'];
+        return usersJson.map((json) => UserStats.fromMap(json)).toList();
+      }
+      throw Exception(response['error'] ?? 'Failed to fetch user stats');
+    } catch (e) {
+      print('Error fetching user stats via API: $e');
+      rethrow;
+    }
   }
 
   @override

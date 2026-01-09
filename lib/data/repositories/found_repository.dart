@@ -357,6 +357,30 @@ class FoundRepository {
     }
   }
 
+  /// Mark a found post as done (resolved/returned).
+  /// 
+  /// [postId] - The id of the post to update
+  /// 
+  /// Returns the number of rows affected.
+  Future<int> markAsDone(dynamic postId) async {
+    try {
+      final db = await _db;
+      
+      final updatedRows = await db.update(
+        'found_posts',
+        {'status': 'done'},
+        where: 'id = ?',
+        whereArgs: [postId],
+      );
+
+      print('Successfully marked found post $postId as done');
+      return updatedRows;
+    } catch (e) {
+      print('Error marking found post as done: $e');
+      rethrow;
+    }
+  }
+
   /// Delete a found post by ID.
   /// 
   /// [postId] - The id of the post to delete

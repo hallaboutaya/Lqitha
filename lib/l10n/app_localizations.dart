@@ -553,7 +553,7 @@ abstract class AppLocalizations {
   /// Stat card title for approved posts today
   ///
   /// In en, this message translates to:
-  /// **'Approved Today'**
+  /// **'Total Approved'**
   String get approvedToday;
 
   /// Stat card title for active users
@@ -885,6 +885,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lost'**
   String get lost;
+
+  /// No description provided for @trustPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust Points'**
+  String get trustPoints;
+
+  /// No description provided for @someone.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone'**
+  String get someone;
+
+  /// No description provided for @userWithId.
+  ///
+  /// In en, this message translates to:
+  /// **'User {id}'**
+  String userWithId(String id);
+
+  /// No description provided for @unknownTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown time'**
+  String get unknownTime;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @secondsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} seconds ago'**
+  String secondsAgo(int count);
+
+  /// No description provided for @minuteAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute ago} other{{count} minutes ago}}'**
+  String minuteAgo(int count);
+
+  /// No description provided for @hourAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour ago} other{{count} hours ago}}'**
+  String hourAgo(int count);
+
+  /// No description provided for @dayAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day ago} other{{count} days ago}}'**
+  String dayAgo(int count);
+
+  /// No description provided for @weekAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 week ago} other{{count} weeks ago}}'**
+  String weekAgo(int count);
+
+  /// No description provided for @monthAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 month ago} other{{count} months ago}}'**
+  String monthAgo(int count);
+
+  /// No description provided for @yearAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 year ago} other{{count} years ago}}'**
+  String yearAgo(int count);
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @postIdNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Post ID not available'**
+  String get postIdNotAvailable;
+
+  /// No description provided for @noFoundItemsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No found items yet'**
+  String get noFoundItemsYet;
+
+  /// No description provided for @noLostItemsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No lost items yet'**
+  String get noLostItemsYet;
+
+  /// No description provided for @userInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'User Insights'**
+  String get userInsights;
+
+  /// No description provided for @avgPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Points'**
+  String get avgPoints;
+
+  /// No description provided for @successRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Success Rate'**
+  String get successRate;
+
+  /// No description provided for @performanceRankings.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance Rankings'**
+  String get performanceRankings;
+
+  /// No description provided for @searchUsersByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Search users by name...'**
+  String get searchUsersByName;
+
+  /// No description provided for @posts.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get posts;
+
+  /// No description provided for @denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Denied'**
+  String get denied;
+
+  /// No description provided for @resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get resolved;
+
+  /// No description provided for @success.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get success;
+
+  /// No description provided for @noUsersFoundMatchingSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'No users found matching your search'**
+  String get noUsersFoundMatchingSearch;
+
+  /// No description provided for @errorLoadingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading profile'**
+  String get errorLoadingProfile;
+
+  /// No description provided for @points.
+  ///
+  /// In en, this message translates to:
+  /// **'Points'**
+  String get points;
+
+  /// No description provided for @founds.
+  ///
+  /// In en, this message translates to:
+  /// **'Founds'**
+  String get founds;
+
+  /// No description provided for @losts.
+  ///
+  /// In en, this message translates to:
+  /// **'Losts'**
+  String get losts;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get appVersion;
+
+  /// No description provided for @developers.
+  ///
+  /// In en, this message translates to:
+  /// **'Developers'**
+  String get developers;
+
+  /// No description provided for @lqithaDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Lqitha is a community-driven platform to help people find lost items and return found ones.'**
+  String get lqithaDescription;
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get pushNotifications;
+
+  /// No description provided for @emailAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Alerts'**
+  String get emailAlerts;
+
+  /// No description provided for @settingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved'**
+  String get settingsSaved;
 }
 
 class _AppLocalizationsDelegate

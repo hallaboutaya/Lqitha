@@ -43,7 +43,7 @@ class ImageHelper {
       final fileSize = await file.length();
       
       if (fileSize > AppConstants.maxImageSizeBytes) {
-        AppLogger.w('Image file too large: ${fileSize} bytes');
+        AppLogger.w('Image file too large: $fileSize bytes');
         throw ImageException.fileTooLarge();
       }
       

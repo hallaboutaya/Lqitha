@@ -55,6 +55,7 @@ class ApiUserRepository extends UserRepository {
   }
 
   /// Get user profile by user ID from API.
+  @override
   Future<User?> getUserProfile(String userId) async {
     try {
       print('📊 ApiUserRepository: Getting profile for userId=$userId');
@@ -79,6 +80,7 @@ class ApiUserRepository extends UserRepository {
   }
 
   /// Update user profile information via API.
+  @override
   Future<void> updateUserProfile({
     required String userId,
     required String username,
@@ -103,6 +105,7 @@ class ApiUserRepository extends UserRepository {
   }
 
   /// Update user profile photo via API.
+  @override
   Future<void> updateUserPhoto(String userId, String photoPath) async {
     try {
       await _apiClient.put(
@@ -121,6 +124,7 @@ class ApiUserRepository extends UserRepository {
   /// 
   /// Returns the User object if credentials are valid, null otherwise.
   /// Also stores the authentication token for subsequent requests.
+  @override
   Future<User?> validateCredentials(String email, String password) async {
     try {
       final response = await _apiClient.post(
@@ -150,6 +154,7 @@ class ApiUserRepository extends UserRepository {
   }
 
   /// Check if an email already exists via API.
+  @override
   Future<bool> emailExists(String email) async {
     try {
       final response = await _apiClient.get(
@@ -168,6 +173,7 @@ class ApiUserRepository extends UserRepository {
   /// Create a new user account via API.
   /// 
   /// Returns the ID of the newly created user.
+  @override
   Future<dynamic> createUser(User user) async {
     try {
       final response = await _apiClient.post(
@@ -194,6 +200,7 @@ class ApiUserRepository extends UserRepository {
   }
 
   /// Get user by email from API.
+  @override
   Future<User?> getUserByEmail(String email) async {
     try {
       final response = await _apiClient.get(

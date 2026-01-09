@@ -1,6 +1,7 @@
 import '../databases/db_helper.dart';
 import '../models/lost_post.dart';
 import '../models/found_post.dart';
+import '../models/user_stats.dart';
 
 class AdminRepository {
   /// Get all pending lost posts with user information
@@ -87,6 +88,34 @@ class AdminRepository {
     return List.generate(maps.length, (i) => FoundPost.fromMap(maps[i]));
   }
 
+  /// Get all resolved (done) lost posts
+  Future<List<LostPost>> getDoneLostPosts() async {
+    final db = await DBHelper.getDatabase();
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT lp.*, u.username, u.photo as user_photo
+      FROM lost_posts lp
+      LEFT JOIN users u ON lp.user_id = u.id
+      WHERE lp.status = ?
+      ORDER BY lp.created_at DESC
+    ''', ['done']);
+    
+    return List.generate(maps.length, (i) => LostPost.fromMap(maps[i]));
+  }
+
+  /// Get all resolved (done) found posts
+  Future<List<FoundPost>> getDoneFoundPosts() async {
+    final db = await DBHelper.getDatabase();
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT fp.*, u.username, u.photo as user_photo
+      FROM found_posts fp
+      LEFT JOIN users u ON fp.user_id = u.id
+      WHERE fp.status = ?
+      ORDER BY fp.created_at DESC
+    ''', ['done']);
+    
+    return List.generate(maps.length, (i) => FoundPost.fromMap(maps[i]));
+  }
+
   /// Approve a post (update status to 'approved')
   Future<void> approvePost(dynamic id, String type) async {
     final db = await DBHelper.getDatabase();
@@ -154,5 +183,53 @@ class AdminRepository {
       'approvedToday': approvedPosts,
       'activeUsers': activeUsers,
     };
+  }
+
+  /// Get statistics for all users for User Insights
+  Future<List<UserStats>> getAllUserStats() async {
+    final db = await DBHelper.getDatabase();
+    
+    // Complex query to get user information and calculate post statistics
+    // Using subqueries for counts in each category
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT 
+        u.id as user_id,
+        u.username,
+        u.photo,
+        u.points,
+        (
+          SELECT COUNT(*) FROM (
+            SELECT user_id FROM lost_posts WHERE user_id = u.id
+            UNION ALL
+            SELECT user_id FROM found_posts WHERE user_id = u.id
+          )
+        ) as total_posts,
+        (
+          SELECT COUNT(*) FROM (
+            SELECT user_id FROM lost_posts WHERE user_id = u.id AND status = 'approved'
+            UNION ALL
+            SELECT user_id FROM found_posts WHERE user_id = u.id AND status = 'approved'
+          )
+        ) as approved_posts,
+        (
+          SELECT COUNT(*) FROM (
+            SELECT user_id FROM lost_posts WHERE user_id = u.id AND status = 'rejected'
+            UNION ALL
+            SELECT user_id FROM found_posts WHERE user_id = u.id AND status = 'rejected'
+          )
+        ) as rejected_posts,
+        (
+          SELECT COUNT(*) FROM (
+            SELECT user_id FROM lost_posts WHERE user_id = u.id AND status = 'done'
+            UNION ALL
+            SELECT user_id FROM found_posts WHERE user_id = u.id AND status = 'done'
+          )
+        ) as resolved_posts
+      FROM users u
+      WHERE u.role != 'admin'
+      ORDER BY total_posts DESC, u.points DESC
+    ''');
+    
+    return List.generate(maps.length, (i) => UserStats.fromMap(maps[i]));
   }
 }

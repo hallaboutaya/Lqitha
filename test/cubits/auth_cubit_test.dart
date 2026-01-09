@@ -2,9 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:hopefully_last/cubits/auth/auth_cubit.dart';
 import 'package:hopefully_last/cubits/auth/auth_state.dart';
-import 'package:hopefully_last/data/models/user.dart';
-import 'package:hopefully_last/data/repositories/user_repository.dart';
-import 'package:hopefully_last/services/auth_service.dart';
 
 // Mock classes would be generated with mockito
 // For now, this is a test structure

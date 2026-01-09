@@ -1,8 +1,6 @@
 import '../../../services/api_client.dart';
-import '../../../config/api_config.dart';
 import '../../models/contact_unlock.dart';
 import '../unlock_repository.dart';
-import '../../../core/logging/app_logger.dart';
 
 class ApiUnlockRepository extends UnlockRepository {
   final ApiClient _apiClient = ApiClient();

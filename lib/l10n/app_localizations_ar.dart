@@ -413,4 +413,175 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get lost => 'مفقود';
+
+  @override
+  String get trustPoints => 'نقاط الثقة';
+
+  @override
+  String get someone => 'شخص ما';
+
+  @override
+  String userWithId(String id) {
+    return 'مستخدم $id';
+  }
+
+  @override
+  String get unknownTime => 'وقت غير معروف';
+
+  @override
+  String get justNow => 'الآن';
+
+  @override
+  String secondsAgo(int count) {
+    return 'منذ $count ثانية';
+  }
+
+  @override
+  String minuteAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count دقيقة',
+      two: 'دقيقتان',
+      one: 'دقيقة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hourAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count ساعة',
+      two: 'ساعتان',
+      one: 'ساعة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count يوم',
+      two: 'يومان',
+      one: 'يوم واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weekAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count أسبوع',
+      two: 'أسبوعان',
+      one: 'أسبوع واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String monthAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count شهر',
+      two: 'شهران',
+      one: 'شهر واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String yearAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'منذ $count سنة',
+      two: 'سنتان',
+      one: 'سنة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noNotificationsYet => 'لا توجد إشعارات بعد';
+
+  @override
+  String get postIdNotAvailable => 'معرف المنشور غير متوفر';
+
+  @override
+  String get noFoundItemsYet => 'لا توجد أشياء موجودة بعد';
+
+  @override
+  String get noLostItemsYet => 'لا توجد أشياء مفقودة بعد';
+
+  @override
+  String get userInsights => 'رؤى المستخدمين';
+
+  @override
+  String get avgPoints => 'متوسط النقاط';
+
+  @override
+  String get successRate => 'نسبة النجاح';
+
+  @override
+  String get performanceRankings => 'تصنيفات الأداء';
+
+  @override
+  String get searchUsersByName => 'البحث عن المستخدمين بالاسم...';
+
+  @override
+  String get posts => 'المنشورات';
+
+  @override
+  String get denied => 'المرفوضة';
+
+  @override
+  String get resolved => 'المستردة';
+
+  @override
+  String get success => 'النجاح';
+
+  @override
+  String get noUsersFoundMatchingSearch =>
+      'لم يتم العثور على مستخدمين يطابقون بحثك';
+
+  @override
+  String get errorLoadingProfile => 'خطأ في تحميل الملف الشخصي';
+
+  @override
+  String get points => 'النقاط';
+
+  @override
+  String get founds => 'الموجودات';
+
+  @override
+  String get losts => 'المفقودات';
+
+  @override
+  String get profile => 'الملف الشخصي';
+
+  @override
+  String get appVersion => 'إصدار التطبيق';
+
+  @override
+  String get developers => 'المطورون';
+
+  @override
+  String get lqithaDescription =>
+      'لقيثة هي منصة مجتمعية لمساعدة الناس في العثور على أشيائهم المفقودة وإعادة الأشياء الموجودة.';
+
+  @override
+  String get pushNotifications => 'إشعارات الهاتف';
+
+  @override
+  String get emailAlerts => 'تنبيهات البريد الإلكتروني';
+
+  @override
+  String get settingsSaved => 'تم حفظ الإعدادات';
 }

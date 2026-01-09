@@ -423,4 +423,169 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get lost => 'Perdu';
+
+  @override
+  String get trustPoints => 'Trust Points';
+
+  @override
+  String get someone => 'Someone';
+
+  @override
+  String userWithId(String id) {
+    return 'User $id';
+  }
+
+  @override
+  String get unknownTime => 'Unknown time';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String secondsAgo(int count) {
+    return '$count seconds ago';
+  }
+
+  @override
+  String minuteAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count minutes ago',
+      one: '1 minute ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hourAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hours ago',
+      one: '1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weekAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weeks ago',
+      one: '1 week ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String monthAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count months ago',
+      one: '1 month ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String yearAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years ago',
+      one: '1 year ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noNotificationsYet => 'No notifications yet';
+
+  @override
+  String get postIdNotAvailable => 'Post ID not available';
+
+  @override
+  String get noFoundItemsYet => 'No found items yet';
+
+  @override
+  String get noLostItemsYet => 'No lost items yet';
+
+  @override
+  String get userInsights => 'User Insights';
+
+  @override
+  String get avgPoints => 'Avg Points';
+
+  @override
+  String get successRate => 'Success Rate';
+
+  @override
+  String get performanceRankings => 'Performance Rankings';
+
+  @override
+  String get searchUsersByName => 'Search users by name...';
+
+  @override
+  String get posts => 'Posts';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get resolved => 'Resolved';
+
+  @override
+  String get success => 'Success';
+
+  @override
+  String get noUsersFoundMatchingSearch =>
+      'No users found matching your search';
+
+  @override
+  String get errorLoadingProfile => 'Error loading profile';
+
+  @override
+  String get points => 'Points';
+
+  @override
+  String get founds => 'Trouvés';
+
+  @override
+  String get losts => 'Perdus';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get appVersion => 'Version de l\'application';
+
+  @override
+  String get developers => 'Développeurs';
+
+  @override
+  String get lqithaDescription =>
+      'Lqitha est une plateforme communautaire pour aider les gens à retrouver des objets perdus et à rendre ceux trouvés.';
+
+  @override
+  String get pushNotifications => 'Notifications Push';
+
+  @override
+  String get emailAlerts => 'Alertes Email';
+
+  @override
+  String get settingsSaved => 'Paramètres enregistrés';
 }

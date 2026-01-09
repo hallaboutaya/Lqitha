@@ -13,7 +13,10 @@ import '../../data/models/notification.dart';
 import '../../services/service_locator.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/repositories/found_repository.dart';
+import '../../data/repositories/unlock_repository.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/popups/popup_contact_unlocked.dart';
+import '../../core/utils/time_formatter.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({
@@ -105,31 +108,41 @@ class _NotificationsPageState extends State<NotificationsPage> {
               avatarUrl = null;
             }
           } else {
-            userName = 'Someone';
+            userName = l10n.someone;
             avatarUrl = null;
           }
         } catch (e) {
           print('Error fetching finder info: $e');
-          userName = 'Someone';
+          userName = l10n.someone;
           avatarUrl = null;
         }
+      } else if (notification.type == 'contact_unlocked') {
+        // For "contact_unlocked": we don't store who unlocked it in the notification record currently.
+        // It's better to show a generic "Someone" or "Unlocker" rather than the recipient's own name.
+        userName = l10n.someone;
+        avatarUrl = null;
       } else {
         // For other user notifications, try to get user info if available
-        // Note: For contact_unlocked, we don't store who unlocked it currently
-        // So we'll just show a generic message
         if (notification.userId != null) {
           final user = await _userRepository.getUserById(notification.userId!);
           if (user != null) {
             userName = user.username;
             avatarUrl = user.photo;
           } else {
-            userName = 'User ${notification.userId}';
+            userName = l10n.userWithId(notification.userId.toString());
             avatarUrl = null;
           }
         } else {
-          userName = 'Someone';
+          userName = l10n.someone;
           avatarUrl = null;
         }
+      }
+      
+      // Override for Admin/System after user fetching logic
+      if (isAdminNotification) {
+        userName = l10n.admin;
+      } else if (isSystemNotification) {
+        userName = l10n.trustPoints;
       }
       
       // Map notification type to action
@@ -151,7 +164,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       items.add(_NotificationItem(
         userName: userName,
         message: notification.message,
-        timeAgo: _formatTimeAgo(notification.createdAt),
+        timeAgo: TimeFormatter.formatTimeAgoFromString(notification.createdAt, l10n),
         avatarUrl: avatarUrl,
         action: action,
         actionLabel: actionLabel,
@@ -162,30 +175,6 @@ class _NotificationsPageState extends State<NotificationsPage> {
     }
     
     return items;
-  }
-  
-  String _formatTimeAgo(String? createdAt) {
-    if (createdAt == null) return 'Unknown time';
-    
-    try {
-      final date = DateTime.parse(createdAt);
-      final now = DateTime.now();
-      final difference = now.difference(date);
-      
-      if (difference.inMinutes < 1) {
-        return 'Just now';
-      } else if (difference.inMinutes < 60) {
-        return '${difference.inMinutes} min ago';
-      } else if (difference.inHours < 24) {
-        return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-      } else if (difference.inDays < 7) {
-        return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-      } else {
-        return '${difference.inDays ~/ 7} week${(difference.inDays ~/ 7) > 1 ? 's' : ''} ago';
-      }
-    } catch (e) {
-      return 'Unknown time';
-    }
   }
 
   @override
@@ -222,7 +211,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 const SizedBox(height: 16),
                                 ElevatedButton(
                                   onPressed: () => _notificationCubit.loadAllNotifications(_currentUserId),
-                                  child: const Text('Retry'),
+                                  child: Text(AppLocalizations.of(context)!.retry),
                                 ),
                               ],
                             ),
@@ -234,8 +223,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                           
                           if (notifications.isEmpty) {
                             return Center(
-                              child: Text(
-                                state.message ?? 'No notifications yet',
+                            child: Text(
+                                state.message ?? AppLocalizations.of(context)!.noNotificationsYet,
                                 style: const TextStyle(color: AppColors.textSecondary),
                               ),
                             );
@@ -283,7 +272,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     );
   }
 
-  void _handleAction(BuildContext context, _NotificationItem item, NotificationModel notification) {
+  void _handleAction(BuildContext context, _NotificationItem item, NotificationModel notification) async {
     // Mark notification as read when user interacts with it
     if (!notification.isRead && notification.id != null) {
       _notificationCubit.markAsRead(notification.id!, _currentUserId);
@@ -292,18 +281,45 @@ class _NotificationsPageState extends State<NotificationsPage> {
     switch (item.action) {
       case NotificationAction.getContact:
         if (notification.relatedPostId != null) {
-          showDialog(
-            context: context,
-            builder: (_) => PaymentPopup(
-              userName: item.userName,
-              itemTitle: item.itemTitle ?? AppLocalizations.of(context)!.yourItem,
-              postId: notification.relatedPostId!,
-            ),
+          final postType = notification.type == 'item_found' ? 'found' : 'found';
+          final unlockRepo = getIt<UnlockRepository>();
+          
+          // Check if already unlocked
+          final isUnlocked = await unlockRepo.isPostUnlocked(
+            notification.relatedPostId!.toString(), 
+            postType
           );
+
+          if (isUnlocked) {
+            // Already unlocked, show contact info directly
+            if (context.mounted) {
+              showDialog(
+                context: context,
+                builder: (_) => ContactUnlockedPopup(
+                  userName: item.userName,
+                  postId: notification.relatedPostId!,
+                  postType: postType,
+                ),
+              );
+            }
+          } else {
+            // Not unlocked, show payment popup
+            if (context.mounted) {
+              showDialog(
+                context: context,
+                builder: (_) => PaymentPopup(
+                  userName: item.userName,
+                  itemTitle: item.itemTitle ?? AppLocalizations.of(context)!.yourItem,
+                  postId: notification.relatedPostId!,
+                  postType: postType,
+                ),
+              );
+            }
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Post ID not available'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.postIdNotAvailable),
               behavior: SnackBarBehavior.floating,
             ),
           );

@@ -48,6 +48,7 @@ class ApiLostRepository extends LostRepository {
   }
 
   /// Search for approved lost posts matching the query.
+  @override
   Future<List<LostPost>> searchPosts(String query) async {
     try {
       final response = await _apiClient.get(
@@ -123,6 +124,7 @@ class ApiLostRepository extends LostRepository {
   /// Update an existing lost post via API.
   /// 
   /// Returns the number of rows affected (1 on success).
+  @override
   Future<int> updatePost(LostPost post) async {
     try {
       if (post.id == null) {
@@ -232,6 +234,7 @@ class ApiLostRepository extends LostRepository {
   }
 
   /// Get all lost posts from API (admin only).
+  @override
   Future<List<LostPost>> getAllPosts() async {
     try {
       final response = await _apiClient.get(
@@ -242,6 +245,21 @@ class ApiLostRepository extends LostRepository {
       return postsJson.map((json) => LostPost.fromMap(json)).toList();
     } catch (e) {
       print('Error fetching all lost posts from API: $e');
+      rethrow;
+    }
+  }
+
+  /// Mark a lost post as done (resolved) via API.
+  @override
+  Future<int> markAsDone(dynamic postId) async {
+    try {
+      await _apiClient.put(
+        '${ApiConfig.LOST_POSTS}/$postId/status',
+        body: {'status': 'done'},
+      );
+      return 1; // Success
+    } catch (e) {
+      print('Error marking lost post as done via API: $e');
       rethrow;
     }
   }

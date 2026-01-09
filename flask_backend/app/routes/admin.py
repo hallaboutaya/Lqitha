@@ -104,3 +104,55 @@ def update_lost_status(current_user_id, post_id):
         return jsonify({'success': True, 'post': response.data[0]}), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@admin_bp.route('/user-stats', methods=['GET'])
+@token_required
+@admin_required
+def get_all_user_stats(current_user_id):
+    try:
+        # Get all non-admin users
+        users_response = supabase.table('users').select('id, username, photo, points').neq('role', 'admin').execute()
+        users = users_response.data
+        
+        user_stats_list = []
+        
+        for user in users:
+            uid = user['id']
+            
+            # Count posts for this user
+            counts = {
+                'user_id': uid,
+                'username': user['username'],
+                'photo': user.get('photo'),
+                'points': user.get('points', 0),
+                'total_posts': 0,
+                'approved_posts': 0,
+                'rejected_posts': 0,
+                'resolved_posts': 0
+            }
+            
+            # Found posts counts
+            found_res = supabase.table('found_posts').select('status').eq('user_id', uid).execute()
+            for p in found_res.data:
+                counts['total_posts'] += 1
+                if p['status'] == 'approved': counts['approved_posts'] += 1
+                elif p['status'] == 'rejected': counts['rejected_posts'] += 1
+                elif p['status'] == 'done': counts['resolved_posts'] += 1
+                
+            # Lost posts counts
+            lost_res = supabase.table('lost_posts').select('status').eq('user_id', uid).execute()
+            for p in lost_res.data:
+                counts['total_posts'] += 1
+                if p['status'] == 'approved': counts['approved_posts'] += 1
+                elif p['status'] == 'rejected': counts['rejected_posts'] += 1
+                elif p['status'] == 'done': counts['resolved_posts'] += 1
+                
+            user_stats_list.append(counts)
+            
+        # Sort by total posts desc, then points desc
+        user_stats_list.sort(key=lambda x: (x['total_posts'], x['points']), reverse=True)
+            
+        return jsonify({'success': True, 'users': user_stats_list}), 200
+    except Exception as e:
+        print(f"Error in get_all_user_stats: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
