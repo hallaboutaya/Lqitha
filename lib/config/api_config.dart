@@ -14,7 +14,7 @@ class ApiConfig {
   /// Base URL for Flask API
   /// Development: http://localhost:5000
   /// Production: https://your-api-domain.com
-  static const String API_BASE_URL = 'http://localhost:5000';
+  static const String API_BASE_URL = 'https://backend-mobile-suva.onrender.com';
   
   // ==================== TIMEOUT CONFIGURATION ====================
   
